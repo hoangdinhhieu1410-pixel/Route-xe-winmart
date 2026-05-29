@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard tối ưu lộ trình giao hàng Winmart đa tỉnh">
+  <title>🚛 Route Optimizer - Winmart</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Đang tối ưu lộ trình giao hàng...</div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-logo"><span class="icon">🚛</span> ROUTE OPTIMIZER</div>
+      <span class="header-subtitle" id="header-subtitle">Winmart Nam Định • Tối ưu lộ trình giao hàng</span>
+    </div>
+    <div class="province-tabs">
+      <button class="province-tab active" data-province="nam_dinh" onclick="Dashboard.switchProvince('nam_dinh')">🏗️ Nam Định</button>
+      <button class="province-tab" data-province="ha_nam" onclick="Dashboard.switchProvince('ha_nam')">🏛️ Hà Nam</button>
+      <button class="province-tab" data-province="ninh_binh" onclick="Dashboard.switchProvince('ninh_binh')">🏔️ Ninh Bình</button>
+      <button class="province-tab" data-province="vinh_phuc" onclick="Dashboard.switchProvince('vinh_phuc')">🏛️ Vĩnh Phúc</button>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-glass" onclick="Dashboard.resetView()">🔄 Reset</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ In báo cáo</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <!-- KPI -->
+    <section>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </section>
+
+    <!-- Warehouse Summary -->
+    <section>
+      <h2 class="section-title"><span class="icon">🏭</span> Tổng Quan Kho Hàng</h2>
+      <div class="warehouse-summary" id="warehouse-summary"></div>
+    </section>
+
+    <!-- Map -->
+    <section>
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🗺️</span> Bản Đồ Lộ Trình</h2>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="vehicle-filter" class="filter-select" onchange="Dashboard.onVehicleFilterChange(this.value)" style="min-width:140px">
+              <option value="all">📍 Tất cả xe</option>
+            </select>
+            <button class="btn btn-glass" onclick="Dashboard.showAllOnMap()">🔄 Reset</button>
+            <button class="btn btn-glass" onclick="MapController.fitAll()">🔍 Zoom fit</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="map"></div>
+          <div class="map-legend" id="map-legend"></div>
+        </div>
+        <div class="map-help">
+          💡 <strong>Tip:</strong> Click vào tên xe trong legend hoặc bảng bên dưới để xem riêng lộ trình của xe đó. Click lại để quay về xem tất cả.
+        </div>
+      </div>
+    </section>
+
+    <!-- ★ Bảng tổng quan xe - huyện -->
+    <section style="margin-top:24px">
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🗺️</span> Tổng Quan Xe — Khu Vực & Quãng Đường</h2>
+        </div>
+        <div class="panel-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Xe</th>
+                  <th>Kho xuất phát</th>
+                  <th>Huyện đi qua</th>
+                  <th>Số điểm</th>
+                  <th>Tổng km</th>
+                  <th>Thời gian Winmart</th>
+                  <th>+ Shop khác</th>
+                  <th>Tổng thời gian ca</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="vehicle-overview-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vehicle Assignment Table -->
+    <section style="margin-top:24px">
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>📋</span> Bảng Tổng Quan — Phân Bổ Xe Theo Khu Vực</h2>
+        </div>
+        <div class="panel-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Xe</th>
+                  <th>Kho</th>
+                  <th>Quận/Huyện</th>
+                  <th>Điểm</th>
+                  <th>Tổng km</th>
+                  <th>Tổng kg</th>
+                  <th>Khung giờ</th>
+                  <th>Thời gian</th>
+                </tr>
+              </thead>
+              <tbody id="vehicle-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ★ NEW: Lịch Trình Chi Tiết Từng Xe -->
+    <section style="margin-top:24px">
+      <h2 class="section-title">
+        <span class="icon">📅</span>
+        Lịch Trình Chi Tiết Từng Xe
+        <span class="section-subtitle">(Bao gồm thời gian giao shop khác)</span>
+      </h2>
+      <div id="vehicle-schedules"></div>
+    </section>
+
+    <!-- Route Cards (expandable timeline) -->
+    <section style="margin-top:24px">
+      <h2 class="section-title">
+        <span class="icon">📍</span>
+        Lộ Trình Trực Quan (Timeline)
+        <span class="section-subtitle">(Click để mở rộng)</span>
+      </h2>
+      <div class="route-details" id="route-details"></div>
+    </section>
+
+    <!-- Store List -->
+    <section style="margin-top:24px">
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🏪</span> Danh Sách Cửa Hàng Winmart (<span id="store-count">0</span> điểm)</h2>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="store-search" class="search-input"
+            placeholder="🔍 Tìm kiếm cửa hàng..." oninput="Dashboard.onSearchInput()">
+          <select id="district-filter" class="filter-select" onchange="Dashboard.onSearchInput()">
+            <option value="">Tất cả quận/huyện</option>
+          </select>
+        </div>
+        <div class="panel-body">
+          <div class="store-list-table table-container">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Tên cửa hàng</th><th>Địa chỉ</th><th>Quận/Huyện</th><th>Tọa độ</th><th>Xe</th></tr>
+              </thead>
+              <tbody id="store-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="text-align:center;padding:40px 0 20px;color:var(--text-muted);font-size:0.8rem">
+      <p>🚛 Route Optimizer v2.0 • Winmart Multi-Province • VRP Algorithm (Nearest Neighbor + 2-opt)</p>
+    </footer>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="data/config.js"></script>
+  <script src="data/stores.js"></script>
+  <script src="data/ha_nam_stores.js"></script>
+  <script src="data/ninh_binh_stores.js"></script>
+  <script src="data/vinh_phuc_stores.js"></script>
+  <script src="js/vrp-solver.js"></script>
+  <script src="js/map-controller.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

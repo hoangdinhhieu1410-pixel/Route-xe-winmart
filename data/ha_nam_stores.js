@@ -1,0 +1,37 @@
+// ============================================
+// 🏪 CỬA HÀNG WINMART - HÀ NAM (31 cửa hàng)
+// ============================================
+
+const HA_NAM_STORES = [
+  { id: 1, name: 'WM+ HNM 15 Đỗ Yểm', lat: 20.5404, lng: 105.9028, district: 'TP. Phủ Lý', address: '15 Đỗ Yểm, P. Lê Hồng Phong', demand: 50 },
+  { id: 2, name: 'WM+ HNM 173 Lê Công Thanh', lat: 20.542, lng: 105.92, district: 'TP. Phủ Lý', address: '173 Lê Công Thanh, P. Minh Khai', demand: 50 },
+  { id: 3, name: 'WM+ HNM 203 Đinh Tiên Hoàng', lat: 20.5319, lng: 105.9197, district: 'TP. Phủ Lý', address: '203 Đinh Tiên Hoàng, P. Trần Hưng Đạo', demand: 50 },
+  { id: 4, name: 'WM+ HNM 414 Lý Thường Kiệt', lat: 20.541, lng: 105.909, district: 'TP. Phủ Lý', address: '414 Lý Thường Kiệt, P. Lê Hồng Phong', demand: 50 },
+  { id: 5, name: 'WM+ HNM Thôn 1 Xã Phù Vân', lat: 20.5452, lng: 105.9003, district: 'TP. Phủ Lý', address: 'Thôn 1, Xã Phù Vân', demand: 50 },
+  { id: 6, name: 'WM+ HNM 109 Quang Trung', lat: 20.5785, lng: 105.872, district: 'H. Kim Bảng', address: '109 Quang Trung, TT Quế', demand: 50 },
+  { id: 7, name: 'WM+ HNM 180 Nguyễn Văn Trỗi', lat: 20.5406, lng: 105.9151, district: 'TP. Phủ Lý', address: '180 Nguyễn Văn Trỗi, P. Hai Bà Trưng', demand: 50 },
+  { id: 8, name: 'WM+ HNM Lô 79 Nguyễn Viết Xuân', lat: 20.537, lng: 105.9245, district: 'TP. Phủ Lý', address: 'Lô 79, Đ. Nguyễn Viết Xuân, P. Liêm Chính', demand: 50 },
+  { id: 9, name: 'WM+ HNM 58 Đinh Tiên Hoàng', lat: 20.5298, lng: 105.9166, district: 'TP. Phủ Lý', address: '58 Đinh Tiên Hoàng, P. Thanh Châu', demand: 50 },
+  { id: 10, name: 'WM+ HNM TDP Non, Thanh Liêm', lat: 20.474, lng: 105.9527, district: 'H. Thanh Liêm', address: 'TDP Non, TT Tân Thanh', demand: 50 },
+  { id: 11, name: 'WM+ HNM Thi Sơn, Kim Bảng', lat: 20.5714, lng: 105.8738, district: 'H. Kim Bảng', address: 'Xóm 7, Xã Thi Sơn', demand: 50 },
+  { id: 12, name: 'WM+ HNM Điệp Sơn, Duy Tiên', lat: 20.6021, lng: 105.979, district: 'TX. Duy Tiên', address: 'Thôn Điệp Sơn, Xã Yên Nam', demand: 50 },
+  { id: 13, name: 'WM+ HNM 68 Lê Chân', lat: 20.5295, lng: 105.9071, district: 'TP. Phủ Lý', address: '68 Lê Chân, P. Lê Hồng Phong', demand: 50 },
+  { id: 14, name: 'WM+ HNM 212 Trường Chinh', lat: 20.5381, lng: 105.917, district: 'TP. Phủ Lý', address: '212 Trường Chinh, P. Hai Bà Trưng', demand: 50 },
+  { id: 15, name: 'WM+ HNM Thôn 7, Hòa Hậu', lat: 20.4743, lng: 106.1673, district: 'H. Lý Nhân', address: 'Thôn 7, Xã Hòa Hậu', demand: 50 },
+  { id: 16, name: 'WM+ HNM 345 Nguyễn Hữu Tiến', lat: 20.6431, lng: 105.9226, district: 'TX. Duy Tiên', address: '345 Nguyễn Hữu Tiến, P. Đồng Văn', demand: 50 },
+  { id: 17, name: 'WM+ HNM 35 Trần Hưng Đạo', lat: 20.5595, lng: 106.0297, district: 'H. Lý Nhân', address: '35 Trần Hưng Đạo, TT Vĩnh Trụ', demand: 50 },
+  { id: 18, name: 'WM+ NBH Duy Dũng, Bình An', lat: 20.4711, lng: 106.0442, district: 'H. Bình Lục', address: 'Thôn Duy Dũng, Xã Bình An', demand: 50 },
+  { id: 19, name: 'WM+ NBH Thôn 3, Vĩnh Trụ', lat: 20.5392, lng: 106.0575, district: 'H. Lý Nhân', address: 'Thôn 3, Xã Vĩnh Trụ', demand: 50 },
+  { id: 20, name: 'WM+ NBH 45 Võ Văn Kiệt', lat: 20.6499, lng: 105.9326, district: 'TX. Duy Tiên', address: '45 Võ Văn Kiệt, P. Đồng Văn', demand: 50 },
+  { id: 21, name: 'WM+ NBH Hòa Ngãi, Liêm Hạ', lat: 20.4964, lng: 105.9316, district: 'H. Thanh Liêm', address: 'Thôn Hòa Ngãi, Xã Liêm Hạ', demand: 50 },
+  { id: 22, name: 'WM+ NBH 274 Phạm Ngọc Nhữ', lat: 20.639, lng: 105.9119, district: 'TX. Duy Tiên', address: '274 Phạm Ngọc Nhữ, P. Duy Hà', demand: 50 },
+  { id: 23, name: 'WM+ NBH Khu ĐT Châu Sơn', lat: 20.5231, lng: 105.9052, district: 'TP. Phủ Lý', address: 'Khu ĐT mới Châu Sơn, P. Châu Sơn', demand: 50 },
+  { id: 24, name: 'WM+ NBH Thôn 2 Cát Lợi', lat: 20.5585, lng: 106.0251, district: 'H. Bình Lục', address: 'Thôn 2 Cát Lợi, Xã Bình Lục', demand: 50 },
+  { id: 25, name: 'WM+ NBH Đội 4, Bình An', lat: 20.5232, lng: 106.0612, district: 'H. Bình Lục', address: 'Thôn Đội 4, Xã Bình An', demand: 50 },
+  { id: 26, name: 'WM+ NBH Số 1 TDP Nha Xá', lat: 20.6657, lng: 106.0195, district: 'TX. Duy Tiên', address: 'Số 1 TDP Nha Xá, P. Duy Tân', demand: 50 },
+  { id: 27, name: 'WM+ NBH 146 Phan Huy Ích', lat: 20.5041, lng: 105.9107, district: 'TP. Phủ Lý', address: '146 Phan Huy Ích, P. Châu Sơn', demand: 50 },
+  { id: 28, name: 'WM+ NBH 133 TDP Điện Biên', lat: 20.6414, lng: 106.0223, district: 'TX. Duy Tiên', address: '133 TDP Điện Biên, P. Duy Tiên', demand: 50 },
+  { id: 29, name: 'WM+ NBH 1162 Lý Nhân Tông', lat: 20.5632, lng: 105.9786, district: 'TX. Duy Tiên', address: '1162 Lý Nhân Tông, P. Tiên Sơn', demand: 50 },
+  { id: 30, name: 'WM+ NBH Thôn Trần Xá, Nam Xang', lat: 20.6031, lng: 106.0497, district: 'H. Lý Nhân', address: 'Thôn Trần Xá, Xã Nam Xang', demand: 50 },
+  { id: 31, name: 'WM+ NBH Thôn Thượng Thọ', lat: 20.4664, lng: 106.004, district: 'H. Bình Lục', address: 'Thôn Thượng Thọ, Xã Bình Mỹ', demand: 50 },
+];

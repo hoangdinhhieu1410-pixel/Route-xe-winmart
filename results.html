@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><title>VRP Results v2 — Multi-Province</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:20px;max-width:1300px;margin:auto;font-size:13px}
+h1{color:#667eea;font-size:1.5rem}
+h2{color:#f093fb;margin-top:24px;font-size:1.1rem;border-bottom:1px solid #333;padding-bottom:6px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.s-card{background:#1a1a2e;padding:14px;border-radius:10px;text-align:center;border:1px solid #333}
+.s-val{font-size:1.8rem;font-weight:800;color:#667eea}
+.s-lbl{font-size:0.75rem;color:#888;text-transform:uppercase;margin-top:4px}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:0.82rem}
+th{background:#1a1a2e;padding:8px 10px;text-align:left;font-size:0.72rem;color:#888;text-transform:uppercase;border-bottom:1px solid #333}
+td{padding:7px 10px;border-bottom:1px solid #222}
+.wh{background:rgba(102,126,234,0.08)}
+.shop{background:rgba(246,173,85,0.1);color:#f6ad55;border-top:2px dashed rgba(246,173,85,0.3);border-bottom:2px dashed rgba(246,173,85,0.3)}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;color:#fff;font-weight:600;font-size:0.75rem}
+.vehicle-header{display:flex;align-items:center;gap:12px;margin:16px 0 6px;padding:12px 14px;border-radius:10px;background:#1a1a2e;border-left:4px solid;flex-wrap:wrap}
+.vehicle-header h3{font-size:0.95rem;margin:0}
+.vehicle-header p{font-size:0.78rem;color:#888;margin:2px 0 0}
+.pill{padding:3px 10px;border-radius:14px;font-size:0.72rem;font-weight:600;margin-left:8px}
+.warn{color:#fc8181;font-weight:600}
+.ok{color:#68d391;font-weight:600}
+.zone-box{padding:12px 16px;background:#1a1a2e;border-radius:10px;margin:8px 0;border-left:4px solid}
+.zone-box strong{display:block;margin-bottom:4px}
+.zone-box ul{margin:4px 0 0 16px;font-size:0.82rem;color:#a0a0b8}
+.zone-box li{margin:2px 0}
+.nghiahung-split{padding:10px 16px;background:rgba(246,173,85,0.08);border:1px dashed rgba(246,173,85,0.3);border-radius:8px;margin:8px 0;font-size:0.82rem;color:#f6ad55}
+
+/* Province tabs */
+.results-tabs{display:flex;gap:4px;margin:16px 0;background:rgba(255,255,255,0.05);padding:4px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);width:fit-content}
+.results-tab{padding:10px 24px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.6);font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap}
+.results-tab:hover{color:white;background:rgba(255,255,255,0.08)}
+.results-tab.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;box-shadow:0 2px 10px rgba(102,126,234,0.3)}
+.province-results{display:none}
+.province-results.visible{display:block}
+</style>
+</head><body>
+<h1>🚛 Kết Quả Tối Ưu Lộ Trình v2 — Winmart Đa Tỉnh</h1>
+<p style="color:#888;margin-top:-8px">Phân vùng kho thủ công • Giới hạn 100km/xe/ngày • Multi-province support</p>
+
+<div class="results-tabs">
+  <button class="results-tab active" onclick="switchResultsTab('nam_dinh')">🏗️ Nam Định</button>
+  <button class="results-tab" onclick="switchResultsTab('ha_nam')">🏛️ Hà Nam</button>
+  <button class="results-tab" onclick="switchResultsTab('ninh_binh')">🏔️ Ninh Bình</button>
+  <button class="results-tab" onclick="switchResultsTab('vinh_phuc')">🏛️ Vĩnh Phúc</button>
+</div>
+
+<div id="output-nam_dinh" class="province-results visible">Đang tính toán Nam Định...</div>
+<div id="output-ha_nam" class="province-results">Đang tính toán Hà Nam...</div>
+<div id="output-ninh_binh" class="province-results">Đang tính toán Ninh Bình...</div>
+<div id="output-vinh_phuc" class="province-results">Đang tính toán Vĩnh Phúc...</div>
+
+<script src="data/config.js"></script>
+<script src="data/stores.js"></script>
+<script src="data/ha_nam_stores.js"></script>
+<script src="data/ninh_binh_stores.js"></script>
+<script src="data/vinh_phuc_stores.js"></script>
+<script src="js/vrp-solver.js"></script>
+<script>
+
+function switchResultsTab(key) {
+  document.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.province-results').forEach(p => p.classList.remove('visible'));
+  document.querySelector(`.results-tab[onclick*="${key}"]`).classList.add('active');
+  document.getElementById('output-' + key).classList.add('visible');
+}
+
+function renderProvinceResults(provinceKey) {
+  const r = VRPSolver.solve(provinceKey);
+  const pConfig = CONFIG.provinces[provinceKey];
+  let h = '';
+
+  // Summary
+  h += '<div class="summary">';
+  h += `<div class="s-card"><div class="s-val">${r.summary.totalVehicles}</div><div class="s-lbl">Tổng số xe</div></div>`;
+  h += `<div class="s-card"><div class="s-val">${r.summary.totalStores}</div><div class="s-lbl">Điểm giao</div></div>`;
+  h += `<div class="s-card"><div class="s-val">${r.summary.totalDistance}</div><div class="s-lbl">Tổng km</div></div>`;
+  h += `<div class="s-card"><div class="s-val">${r.summary.avgDistancePerVehicle}</div><div class="s-lbl">TB km/xe</div></div>`;
+  h += `<div class="s-card"><div class="s-val">${r.summary.avgStopsPerVehicle}</div><div class="s-lbl">TB điểm/xe</div></div>`;
+  h += `<div class="s-card"><div class="s-val">${(r.summary.totalStores * 50).toLocaleString()} kg</div><div class="s-lbl">Tổng hàng Winmart</div></div>`;
+  h += '</div>';
+
+  // Zone assignment (only for Nam Dinh)
+  if (provinceKey === 'nam_dinh') {
+    h += '<h2>🗺️ Phân Vùng Kho (Theo Yêu Cầu)</h2>';
+    h += `<div class="zone-box" style="border-color:#667eea">
+      <strong style="color:#667eea">🏭 Kho TP Nam Định</strong>
+      <ul><li>TP. Nam Định (18 cửa hàng nội thành)</li><li>H. Nam Trực</li><li>H. Ý Yên</li><li>H. Vụ Bản</li><li>½ H. Nghĩa Hưng (phía Bắc): Nghĩa Thái, Đào Khê Thượng, Phố Đoài, Hải Đông</li></ul>
+    </div>`;
+    h += `<div class="zone-box" style="border-color:#f093fb">
+      <strong style="color:#f093fb">🏭 Kho Hải Hậu</strong>
+      <ul><li>H. Hải Hậu</li><li>H. Giao Thủy</li><li>H. Xuân Trường</li><li>H. Trực Ninh</li><li>½ H. Nghĩa Hưng (phía Nam): Nghĩa Sơn, Phúc Thắng, Quỹ Nhất, Rạng Đông</li></ul>
+    </div>`;
+    h += `<div class="nghiahung-split">📌 <strong>Nghĩa Hưng chia đôi:</strong> 4 cửa hàng phía Bắc (lat>20.21) → Kho TP NĐ | 4 cửa hàng phía Nam (lat≤20.21) → Kho Hải Hậu</div>`;
+  } else {
+    h += '<h2>🗺️ Phân Vùng Kho</h2>';
+    pConfig.warehouses.forEach(w => {
+      const districts = pConfig.warehouseAssignment[w.id] || [];
+      h += `<div class="zone-box" style="border-color:${w.color}">
+        <strong style="color:${w.color}">🏭 ${w.name}</strong>
+        <ul>${districts.map(d => `<li>${d}</li>`).join('')}</ul>
+      </div>`;
+    });
+  }
+
+  // Warehouse breakdown
+  h += '<h2>🏭 Tổng Quan Phân Bổ</h2>';
+  Object.keys(r.summary.warehouseBreakdown).forEach(k => {
+    const wb = r.summary.warehouseBreakdown[k];
+    h += `<div style="padding:10px 14px;background:#1a1a2e;border-radius:8px;margin:6px 0;border-left:4px solid ${wb.color}">
+      <strong style="color:${wb.color}">${wb.name}</strong>: ${wb.vehicles} xe | ${wb.stores} điểm | ${wb.distance} km
+    </div>`;
+  });
+
+  // Each vehicle
+  h += '<h2>📅 Lịch Trình Chi Tiết Từng Xe</h2>';
+  r.vehicles.forEach(v => {
+    const wm = pConfig.warehouses.find(w => w.id === v.warehouseId);
+    const lastStop = v.stores[v.stores.length - 1];
+    const lastDepMin = parseInt(lastStop.departureTime.split(':')[0]) * 60 + parseInt(lastStop.departureTime.split(':')[1]);
+    const otherEndMin = lastDepMin + 180;
+    const otherEnd = String(Math.floor(otherEndMin/60)).padStart(2,'0') + ':' + String(otherEndMin%60).padStart(2,'0');
+    const retMin = otherEndMin + Math.round(v.returnDistance / 45 * 60);
+    const finalRet = String(Math.floor(retMin/60)).padStart(2,'0') + ':' + String(retMin%60).padStart(2,'0');
+    const kmStatus = v.totalDistance <= 100 ? '<span class="ok">✅ ≤100km</span>' : '<span class="warn">⚠️ >100km</span>';
+
+    h += `<div class="vehicle-header" style="border-color:${v.color}">
+      <div style="flex:1">
+        <h3><span class="badge" style="background:${v.color}">Xe ${v.id}</span> ${v.warehouseName} ${kmStatus}</h3>
+        <p>${v.districts.join(', ')} • ${v.totalStops} điểm • <strong>${v.totalDistance} km</strong> • ${v.totalWeight} kg
+          <span class="pill" style="background:rgba(79,209,197,0.2);color:#4fd1c5">07:00 → ${finalRet}</span>
+        </p>
+      </div>
+    </div>`;
+
+    h += '<table><thead><tr><th>TT</th><th>Hoạt động</th><th>Địa chỉ</th><th>Đến</th><th>Rời</th><th>+km</th><th>Tổng km</th><th>Tốc độ</th></tr></thead><tbody>';
+
+    h += `<tr class="wh"><td>🏭</td><td><strong>Xuất phát - ${wm.name}</strong></td><td style="color:#888">${wm.lat.toFixed(4)}, ${wm.lng.toFixed(4)}</td><td>—</td><td><strong>07:00</strong></td><td>—</td><td>0</td><td>—</td></tr>`;
+
+    v.stores.forEach((s, i) => {
+      h += `<tr><td><span class="badge" style="background:${v.color}">${i+1}</span></td><td><strong>${s.store.name}</strong></td><td>${s.store.address}, <em style="color:#888">${s.store.district}</em></td><td>${s.arrivalTime}</td><td>${s.departureTime}</td><td>+${s.distanceFromPrev}</td><td>${s.cumulativeDistance}</td><td>${s.speed} km/h</td></tr>`;
+    });
+
+    h += `<tr class="shop"><td>📦</td><td><strong>Giao hàng shop khác</strong> <span style="font-size:0.7rem;opacity:0.7">(30% tải, 3 tiếng)</span></td><td style="color:#f6ad55">Các điểm shop khác</td><td>${lastStop.departureTime}</td><td>${otherEnd}</td><td colspan="2" style="text-align:center"><em>~3 tiếng</em></td><td>—</td></tr>`;
+
+    h += `<tr class="wh"><td>🏠</td><td><strong>Về ${wm.name}</strong></td><td style="color:#888">Kết thúc ca</td><td><strong>${finalRet}</strong></td><td>—</td><td>+${v.returnDistance}</td><td>${v.totalDistance}</td><td>—</td></tr>`;
+    h += '</tbody></table>';
+  });
+
+  return h;
+}
+
+// Render both provinces
+document.getElementById('output-nam_dinh').innerHTML = renderProvinceResults('nam_dinh');
+document.getElementById('output-ha_nam').innerHTML = renderProvinceResults('ha_nam');
+document.getElementById('output-ninh_binh').innerHTML = renderProvinceResults('ninh_binh');
+document.getElementById('output-vinh_phuc').innerHTML = renderProvinceResults('vinh_phuc');
+</script>
+</body></html>
