@@ -262,6 +262,44 @@ const MapController = {
   },
 
   // ==============================
+  // Hiển thị NHIỀU xe (ẩn các xe khác)
+  // ==============================
+  showSelectedVehicles(vehicleIds) {
+    if (!vehicleIds || vehicleIds.length === 0) {
+      this.showAllVehicles();
+      return;
+    }
+    const idSet = new Set(vehicleIds);
+    this.activeVehicleId = null;
+    const bounds = L.latLngBounds([]);
+
+    Object.keys(this.routeLayerGroups).forEach(id => {
+      const vid = parseInt(id);
+      const group = this.routeLayerGroups[vid];
+      if (idSet.has(vid)) {
+        if (!this.allRoutesGroup.hasLayer(group)) {
+          this.allRoutesGroup.addLayer(group);
+        }
+        group.eachLayer(layer => {
+          if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+            layer.setStyle({ weight: 5, opacity: 1 });
+          }
+          if (layer instanceof L.Marker) bounds.extend(layer.getLatLng());
+          else if (layer instanceof L.Polyline) bounds.extend(layer.getBounds());
+        });
+      } else {
+        if (this.allRoutesGroup.hasLayer(group)) {
+          this.allRoutesGroup.removeLayer(group);
+        }
+      }
+    });
+
+    if (bounds.isValid()) {
+      this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    }
+  },
+
+  // ==============================
   // Fit toàn bộ
   // ==============================
   fitAll(stores, warehouses) {

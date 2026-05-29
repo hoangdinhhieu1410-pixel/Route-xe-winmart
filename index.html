@@ -55,9 +55,15 @@
         <div class="panel-header">
           <h2 class="panel-title"><span>🗺️</span> Bản Đồ Lộ Trình</h2>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="vehicle-filter" class="filter-select" onchange="Dashboard.onVehicleFilterChange(this.value)" style="min-width:140px">
-              <option value="all">📍 Tất cả xe</option>
-            </select>
+            <div class="vehicle-filter-wrap" id="vehicle-filter-wrap">
+              <button class="btn btn-glass" onclick="Dashboard.toggleFilterPanel()" id="filter-toggle-btn">📍 Chọn xe ▾</button>
+              <div class="vehicle-filter-panel hidden" id="vehicle-filter-panel">
+                <label class="vf-item vf-all" onclick="Dashboard.onFilterSelectAll()">
+                  <input type="checkbox" id="vf-all" checked> <strong>📍 Tất cả xe</strong>
+                </label>
+                <div id="vehicle-filter-list"></div>
+              </div>
+            </div>
             <button class="btn btn-glass" onclick="Dashboard.showAllOnMap()">🔄 Reset</button>
             <button class="btn btn-glass" onclick="MapController.fitAll()">🔍 Zoom fit</button>
           </div>

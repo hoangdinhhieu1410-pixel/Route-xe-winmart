@@ -522,16 +522,11 @@ const Dashboard = {
   },
 
   toggleVehicleHighlight(vehicleId) {
-    const selected = MapController.toggleVehicle(vehicleId);
-    this.activeVehicleId = selected ? vehicleId : null;
-    document.querySelectorAll('.vehicle-row').forEach(r => {
-      r.classList.toggle('active-row', selected && parseInt(r.dataset.vehicleId) === vehicleId);
-    });
-    // Highlight schedule card
-    document.querySelectorAll('.schedule-card').forEach(c => c.classList.remove('schedule-active'));
-    if (selected) {
-      document.getElementById(`schedule-${vehicleId}`)?.classList.add('schedule-active');
-      document.getElementById(`schedule-${vehicleId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Toggle checkbox in filter panel
+    const cb = document.getElementById(`vf-${vehicleId}`);
+    if (cb) {
+      cb.checked = !cb.checked;
+      this.applyVehicleFilter();
     }
   },
 
@@ -552,9 +547,12 @@ const Dashboard = {
 
   resetView() {
     this.showAllOnMap();
-    // Reset vehicle filter dropdown
-    const vf = document.getElementById('vehicle-filter');
-    if (vf) vf.value = 'all';
+    // Reset all checkboxes to checked
+    const allCb = document.getElementById('vf-all');
+    if (allCb) allCb.checked = true;
+    document.querySelectorAll('#vehicle-filter-list input[type="checkbox"]').forEach(cb => cb.checked = true);
+    const vehicles = this.solution?.vehicles;
+    if (vehicles) this._updateFilterBtnText(vehicles.length, vehicles.length);
   },
 
   // ==============================
@@ -601,27 +599,95 @@ const Dashboard = {
   },
 
   // ==============================
-  // 🚛 Bộ lọc xe trên bản đồ
+  // 🚛 Bộ lọc xe checkbox (multi-select)
   // ==============================
   renderVehicleFilter(vehicles) {
-    const select = document.getElementById('vehicle-filter');
-    if (!select) return;
-    select.innerHTML = '<option value="all">📍 Tất cả xe</option>';
+    const list = document.getElementById('vehicle-filter-list');
+    if (!list) return;
+    list.innerHTML = '';
     vehicles.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = `🚛 Xe ${v.id} — ${v.totalStops} điểm, ${v.totalDistance}km`;
-      opt.style.color = v.color;
-      select.appendChild(opt);
+      const label = document.createElement('label');
+      label.className = 'vf-item';
+      label.innerHTML = `
+        <input type="checkbox" id="vf-${v.id}" checked data-vid="${v.id}" onchange="Dashboard.applyVehicleFilter()">
+        <span class="vf-color" style="background:${v.color}"></span>
+        <span>🚛 Xe ${v.id} — ${v.totalStops} điểm, ${v.totalDistance}km</span>`;
+      list.appendChild(label);
+    });
+    // Update button text
+    this._updateFilterBtnText(vehicles.length, vehicles.length);
+  },
+
+  toggleFilterPanel() {
+    const panel = document.getElementById('vehicle-filter-panel');
+    if (panel) panel.classList.toggle('hidden');
+    // Close on outside click
+    if (!panel.classList.contains('hidden')) {
+      setTimeout(() => {
+        const closeHandler = (e) => {
+          if (!document.getElementById('vehicle-filter-wrap')?.contains(e.target)) {
+            panel.classList.add('hidden');
+            document.removeEventListener('click', closeHandler);
+          }
+        };
+        document.addEventListener('click', closeHandler);
+      }, 10);
+    }
+  },
+
+  onFilterSelectAll() {
+    const allCb = document.getElementById('vf-all');
+    if (!allCb) return;
+    // Delay to let the checkbox state update first
+    setTimeout(() => {
+      const checked = allCb.checked;
+      document.querySelectorAll('#vehicle-filter-list input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
+      });
+      this.applyVehicleFilter();
+    }, 10);
+  },
+
+  applyVehicleFilter() {
+    const checkboxes = document.querySelectorAll('#vehicle-filter-list input[type="checkbox"]');
+    const total = checkboxes.length;
+    const selected = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) selected.push(parseInt(cb.dataset.vid));
+    });
+
+    const allCb = document.getElementById('vf-all');
+    if (allCb) allCb.checked = (selected.length === total);
+
+    // Update button text
+    this._updateFilterBtnText(selected.length, total);
+
+    // Update map
+    if (selected.length === total || selected.length === 0) {
+      const pConfig = CONFIG.provinces[this.currentProvince];
+      MapController.showAllVehicles();
+      MapController.fitAll(pConfig.getStores(), pConfig.warehouses);
+    } else {
+      MapController.showSelectedVehicles(selected);
+    }
+
+    // Highlight rows in tables
+    const selectedSet = new Set(selected);
+    document.querySelectorAll('.vehicle-row').forEach(r => {
+      const vid = parseInt(r.dataset.vehicleId);
+      r.classList.toggle('active-row', selected.length < total && selectedSet.has(vid));
     });
   },
 
-  onVehicleFilterChange(value) {
-    if (value === 'all') {
-      this.showAllOnMap();
+  _updateFilterBtnText(selected, total) {
+    const btn = document.getElementById('filter-toggle-btn');
+    if (!btn) return;
+    if (selected === total) {
+      btn.textContent = '📍 Tất cả xe ▾';
+    } else if (selected === 0) {
+      btn.textContent = '📍 Chưa chọn xe ▾';
     } else {
-      const vehicleId = parseInt(value);
-      this.toggleVehicleHighlight(vehicleId);
+      btn.textContent = `📍 ${selected}/${total} xe ▾`;
     }
   }
 };
