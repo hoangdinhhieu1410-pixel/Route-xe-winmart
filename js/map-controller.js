@@ -131,8 +131,10 @@ const MapController = {
     }
 
     // --- Winmart store markers ---
-    if (typeof WINMART_STORES !== 'undefined') {
-      const wmList = WINMART_STORES.filter(s => s.province === provName);
+    const wmSource = (typeof WINMART_STORES_ROUTE !== 'undefined') ? WINMART_STORES_ROUTE
+                   : (typeof WINMART_STORES !== 'undefined') ? WINMART_STORES : [];
+    if (wmSource.length) {
+      const wmList = wmSource.filter(s => s.province === provName);
       wmList.forEach(wm => {
         const icon = L.divIcon({
           className: 'wh-marker-wm-route',
