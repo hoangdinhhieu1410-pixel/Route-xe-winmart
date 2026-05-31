@@ -43,7 +43,7 @@ const WarehouseMap = (() => {
       GHN_STATS.total = GHN_WAREHOUSES.length;
       GHN_STATS.provinces = [...new Set(GHN_WAREHOUSES.map(w => w.province))];
       GHN_STATS.types['WM'] = 'Cửa hàng Winmart';
-      GHN_STATS.typeColors['WM'] = '#FFEA00';
+      GHN_STATS.typeColors['WM'] = '#FF1493';
       GHN_STATS.typeIcons['WM'] = '🏪';
     }
 
@@ -99,7 +99,7 @@ const WarehouseMap = (() => {
       BC: `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="${colors.BC}" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
       KTC: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="${colors.KTC}" stroke="#fff" stroke-width="1.5"/></svg>`,
       GXT: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,14 1,14" fill="${colors.GXT}" stroke="#fff" stroke-width="1.5"/></svg>`,
-      WM: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10.5,5.5 15.5,6.5 12,10 12.5,15 8,12.5 3.5,15 4,10 0.5,6.5 5.5,5.5" fill="${colors.WM || '#FFEA00'}" stroke="#fff" stroke-width="1"/></svg>`
+      WM: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10.5,5.5 15.5,6.5 12,10 12.5,15 8,12.5 3.5,15 4,10 0.5,6.5 5.5,5.5" fill="${colors.WM || '#FF1493'}" stroke="#fff" stroke-width="1"/></svg>`
     };
     list.innerHTML = Object.entries(types).map(([key, name]) => {
       return `<label>
@@ -213,17 +213,18 @@ const WarehouseMap = (() => {
       });
     }
 
-    // ★ Winmart — small yellow star
+    // ★ Winmart — hot pink star 16px
     return L.divIcon({
       className: 'wh-marker-wm',
       html: `<div style="
-        width:12px; height:12px;
+        width:16px; height:16px;
         transition: transform 0.2s ease;
-      "><svg viewBox="0 0 12 12" width="12" height="12">
-        <polygon points="6,0.5 7.5,4 11.5,4.5 8.5,7 9.5,11 6,9 2.5,11 3.5,7 0.5,4.5 4.5,4" fill="${color}" stroke="#fff" stroke-width="0.8"/>
+        filter: drop-shadow(0 0 4px ${color}80);
+      "><svg viewBox="0 0 16 16" width="16" height="16">
+        <polygon points="8,0.5 10.2,5.2 15.5,5.8 11.5,9.3 12.7,15 8,12.2 3.3,15 4.5,9.3 0.5,5.8 5.8,5.2" fill="${color}" stroke="#fff" stroke-width="1"/>
       </svg></div>`,
-      iconSize: [12, 12],
-      iconAnchor: [6, 6]
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
     });
   }
 
@@ -277,15 +278,24 @@ const WarehouseMap = (() => {
     const bar = document.getElementById('wh-stats-bar');
     const byProv = {};
     filtered.forEach(w => {
-      byProv[w.province] = (byProv[w.province] || 0) + 1;
+      if (!byProv[w.province]) byProv[w.province] = { total: 0, BC: 0, KTC: 0, GXT: 0, WM: 0 };
+      byProv[w.province].total++;
+      if (byProv[w.province][w.type] !== undefined) byProv[w.province][w.type]++;
     });
     bar.innerHTML = Object.entries(byProv)
-      .sort((a, b) => b[1] - a[1])
-      .map(([prov, count]) => {
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([prov, data]) => {
         const color = PROVINCE_COLORS[prov] || '#888';
-        return `<div class="wh-stat">
+        const parts = [];
+        if (data.WM) parts.push(`<span style="color:${GHN_STATS.typeColors.WM}">★${data.WM}</span>`);
+        if (data.BC) parts.push(`<span style="color:${GHN_STATS.typeColors.BC}">●${data.BC}</span>`);
+        if (data.KTC) parts.push(`<span style="color:${GHN_STATS.typeColors.KTC}">◆${data.KTC}</span>`);
+        if (data.GXT) parts.push(`<span style="color:${GHN_STATS.typeColors.GXT}">▲${data.GXT}</span>`);
+        return `<div class="wh-stat" style="cursor:pointer" onclick="WarehouseMap.selectProvince('${prov}')">
           <span class="wh-type-dot" style="background:${color}"></span>
-          ${prov}: <strong>${count}</strong>
+          <span>${prov}</span>
+          <strong>${data.total}</strong>
+          <span style="font-size:0.7rem;display:flex;gap:4px;margin-left:2px">${parts.join('')}</span>
         </div>`;
       }).join('');
   }
@@ -439,8 +449,28 @@ const WarehouseMap = (() => {
   // Init on load
   document.addEventListener('DOMContentLoaded', init);
 
+  function selectProvince(provName) {
+    // Toggle: if only this province is selected, reset to all
+    if (selectedProvinces.size === 1 && selectedProvinces.has(provName)) {
+      document.querySelectorAll('#province-filter-list input[type=checkbox]').forEach(c => c.checked = true);
+      document.getElementById('prov-all').checked = true;
+      selectedProvinces.clear();
+      GHN_STATS.provinces.forEach(p => selectedProvinces.add(p));
+    } else {
+      // Select only this province
+      selectedProvinces.clear();
+      selectedProvinces.add(provName);
+      document.querySelectorAll('#province-filter-list input[type=checkbox]').forEach(c => {
+        c.checked = (c.dataset.province === provName);
+      });
+      document.getElementById('prov-all').checked = false;
+    }
+    updateProvLabel();
+    refresh();
+  }
+
   return {
     toggleDropdown, onProvChange, onProvSelectAll, onTypeChange, onTypeSelectAll,
-    onSearch, resetAll, fitAll, flyTo
+    onSearch, resetAll, fitAll, flyTo, selectProvince
   };
 })();
