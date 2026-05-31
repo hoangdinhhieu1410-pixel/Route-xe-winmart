@@ -98,7 +98,8 @@ const WarehouseMap = (() => {
     const svgIcons = {
       BC: `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="${colors.BC}" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
       KTC: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="${colors.KTC}" stroke="#fff" stroke-width="1.5"/></svg>`,
-      GXT: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,14 1,14" fill="${colors.GXT}" stroke="#fff" stroke-width="1.5"/></svg>`
+      GXT: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,14 1,14" fill="${colors.GXT}" stroke="#fff" stroke-width="1.5"/></svg>`,
+      WM: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10.5,5.5 15.5,6.5 12,10 12.5,15 8,12.5 3.5,15 4,10 0.5,6.5 5.5,5.5" fill="${colors.WM || '#76FF03'}" stroke="#fff" stroke-width="1"/></svg>`
     };
     list.innerHTML = Object.entries(types).map(([key, name]) => {
       return `<label>
