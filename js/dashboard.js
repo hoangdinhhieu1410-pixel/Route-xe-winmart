@@ -36,6 +36,7 @@ const Dashboard = {
       if (storeCountEl) storeCountEl.textContent = allStores.length;
 
       MapController.drawRoutes(this.solution);
+      MapController.addExtraMarkers(pConfig.name);
       MapController.fitAll(allStores, pConfig.warehouses);
 
       setTimeout(() => {
@@ -103,6 +104,7 @@ const Dashboard = {
       });
 
       MapController.drawRoutes(this.solution);
+      MapController.addExtraMarkers(pConfig.name);
       MapController.fitAll(allStores, pConfig.warehouses);
 
       setTimeout(() => {

@@ -88,11 +88,73 @@ const MapController = {
           <div class="popup-title">🏭 ${w.name}</div>
           <div class="popup-address">Tọa độ: ${w.lat.toFixed(6)}, ${w.lng.toFixed(6)}</div>
         `, { className: 'custom-popup' });
-    });
-  },
+    });\n  },
 
   // ==============================
-  // Vẽ routes - MỖI XE LÀ 1 LayerGroup riêng
+  // Vẽ thêm Bưu Cục + Winmart lên bản đồ route
+  // ==============================
+  extraMarkersGroup: null,
+
+  addExtraMarkers(provinceName) {
+    // Remove old extra markers
+    if (this.extraMarkersGroup) {
+      this.map.removeLayer(this.extraMarkersGroup);
+    }
+    this.extraMarkersGroup = L.layerGroup().addTo(this.map);
+
+    const provName = provinceName; // e.g. "Nam Định"
+
+    // --- Bưu Cục markers (from GHN_WAREHOUSES) ---
+    if (typeof GHN_WAREHOUSES !== 'undefined') {
+      const bcList = GHN_WAREHOUSES.filter(w =>
+        w.type === 'BC' && w.province === provName
+      );
+      bcList.forEach(bc => {
+        const icon = L.divIcon({
+          className: 'wh-marker-bc-route',
+          html: `<div style="
+            width:14px; height:14px; border-radius:50%;
+            background:#00E5FF; border:2px solid #fff;
+            box-shadow: 0 0 8px #00E5FF90;
+            display:flex; align-items:center; justify-content:center;
+          "><div style="width:4px;height:4px;border-radius:50%;background:#fff"></div></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        L.marker([bc.lat, bc.lng], { icon, zIndexOffset: 500 })
+          .addTo(this.extraMarkersGroup)
+          .bindPopup(`
+            <div class="popup-title">📮 ${bc.name}</div>
+            <div class="popup-address">Bưu Cục • ${bc.district}</div>
+          `, { className: 'custom-popup' });
+      });
+    }
+
+    // --- Winmart store markers ---
+    if (typeof WINMART_STORES !== 'undefined') {
+      const wmList = WINMART_STORES.filter(s => s.province === provName);
+      wmList.forEach(wm => {
+        const icon = L.divIcon({
+          className: 'wh-marker-wm-route',
+          html: `<div style="width:14px;height:14px;">
+            <svg viewBox="0 0 14 14" width="14" height="14">
+              <polygon points="7,0.5 9,4.5 13.5,5 10,8 11,12.5 7,10.5 3,12.5 4,8 0.5,5 5,4.5"
+                fill="#FF1493" stroke="#fff" stroke-width="0.8"/>
+            </svg></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        L.marker([wm.lat, wm.lng], { icon, zIndexOffset: 400 })
+          .addTo(this.extraMarkersGroup)
+          .bindPopup(`
+            <div class="popup-title">🏪 ${wm.name.replace(/,$/, '')}</div>
+            <div class="popup-address">Cửa hàng Winmart</div>
+          `, { className: 'custom-popup' });
+      });
+    }
+  },
+
+
   // ==============================
   drawRoutes(solution) {
     this.clearAll();
