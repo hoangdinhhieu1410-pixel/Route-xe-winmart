@@ -74,12 +74,16 @@ const WarehouseMap = (() => {
     const list = document.getElementById('type-filter-list');
     const types = GHN_STATS.types;
     const colors = GHN_STATS.typeColors;
-    const icons = GHN_STATS.typeIcons;
+    const svgIcons = {
+      BC: `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="${colors.BC}" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
+      KTC: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="${colors.KTC}" stroke="#fff" stroke-width="1.5"/></svg>`,
+      GXT: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,14 1,14" fill="${colors.GXT}" stroke="#fff" stroke-width="1.5"/></svg>`
+    };
     list.innerHTML = Object.entries(types).map(([key, name]) => {
       return `<label>
         <input type="checkbox" data-type="${key}" checked onchange="WarehouseMap.onTypeChange()">
-        <span class="wh-type-dot" style="background:${colors[key]}"></span>
-        ${icons[key]} ${name} (${key})
+        ${svgIcons[key]}
+        ${name} (${key})
       </label>`;
     }).join('');
   }
