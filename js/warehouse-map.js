@@ -26,6 +26,27 @@ const WarehouseMap = (() => {
   };
 
   function init() {
+    // Merge Winmart stores into warehouse data
+    if (typeof WINMART_STORES !== 'undefined') {
+      WINMART_STORES.forEach(s => {
+        GHN_WAREHOUSES.push({
+          id: 1000 + s.id,
+          name: s.name.replace(/,$/, ''),
+          type: 'WM',
+          province: s.province,
+          district: s.district,
+          lat: s.lat,
+          lng: s.lng,
+          om: ''
+        });
+      });
+      GHN_STATS.total = GHN_WAREHOUSES.length;
+      GHN_STATS.provinces = [...new Set(GHN_WAREHOUSES.map(w => w.province))];
+      GHN_STATS.types['WM'] = 'Cửa hàng Winmart';
+      GHN_STATS.typeColors['WM'] = '#76FF03';
+      GHN_STATS.typeIcons['WM'] = '🏪';
+    }
+
     // Init map
     map = L.map('wh-map', {
       zoomControl: true,
@@ -108,6 +129,12 @@ const WarehouseMap = (() => {
         <div class="kpi-label">Bưu Cục</div>
       </div>
       <div class="kpi-card">
+        <div class="kpi-icon">🏪</div>
+        <div class="kpi-value" style="color:${GHN_STATS.typeColors.WM}">${filtered.filter(w => w.type === 'WM').length}</div>
+        <div class="kpi-label">Winmart</div>
+      </div>
+      </div>
+      <div class="kpi-card">
         <div class="kpi-icon">🏭</div>
         <div class="kpi-value" style="color:${GHN_STATS.typeColors.KTC}">${ktcCount}</div>
         <div class="kpi-label">Kho Chuyển Tiếp</div>
@@ -170,17 +197,32 @@ const WarehouseMap = (() => {
     }
 
     // ★ Bưu Cục — circle with inner dot
+    if (type === 'BC') {
+      return L.divIcon({
+        className: 'wh-marker-bc',
+        html: `<div style="
+          width:18px; height:18px; border-radius:50%;
+          background:${color}; border:2.5px solid #fff;
+          box-shadow: 0 0 10px ${color}90, 0 2px 6px rgba(0,0,0,0.4);
+          transition: transform 0.2s ease;
+          display:flex; align-items:center; justify-content:center;
+        "><div style="width:6px;height:6px;border-radius:50%;background:#fff;opacity:0.9"></div></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+    }
+
+    // ★ Winmart — small green square
     return L.divIcon({
-      className: 'wh-marker-bc',
+      className: 'wh-marker-wm',
       html: `<div style="
-        width:18px; height:18px; border-radius:50%;
-        background:${color}; border:2.5px solid #fff;
-        box-shadow: 0 0 10px ${color}90, 0 2px 6px rgba(0,0,0,0.4);
+        width:10px; height:10px; border-radius:2px;
+        background:${color}; border:1.5px solid #fff;
+        box-shadow: 0 0 6px ${color}80;
         transition: transform 0.2s ease;
-        display:flex; align-items:center; justify-content:center;
-      "><div style="width:6px;height:6px;border-radius:50%;background:#fff;opacity:0.9"></div></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9]
+      "></div>`,
+      iconSize: [10, 10],
+      iconAnchor: [5, 5]
     });
   }
 
