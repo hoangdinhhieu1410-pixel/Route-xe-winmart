@@ -73,6 +73,24 @@
     #wh-map { height: 600px; border-radius: var(--radius-md); }
     /* Warehouse table */
     .wh-table { max-height: 500px; overflow-y: auto; }
+    /* Marker glow animation */
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    /* Override leaflet icon defaults */
+    .wh-marker-ktc, .wh-marker-gxt, .wh-marker-bc { background: none !important; border: none !important; }
+    .wh-marker-bc:hover > div { transform: scale(1.4) !important; }
+    /* Map legend */
+    .wh-legend {
+      display: flex; gap: 16px; padding: 10px 0; flex-wrap: wrap;
+    }
+    .wh-legend-item {
+      display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .wh-legend-shape {
+      width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -140,6 +158,20 @@
         <div class="wh-stats-bar" id="wh-stats-bar"></div>
         <div class="panel-body">
           <div id="wh-map"></div>
+          <div class="wh-legend">
+            <div class="wh-legend-item">
+              <div class="wh-legend-shape"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="#00E5FF" stroke="#fff" stroke-width="2"/><circle cx="9" cy="9" r="2.5" fill="#fff"/></svg></div>
+              <span>Bưu Cục (BC)</span>
+            </div>
+            <div class="wh-legend-item">
+              <div class="wh-legend-shape"><svg width="20" height="20" viewBox="0 0 20 20"><polygon points="10,1 19,10 10,19 1,10" fill="#FF6D00" stroke="#fff" stroke-width="1.5"/><text x="10" y="13" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold">K</text></svg></div>
+              <span>Kho Chuyển Tiếp (KTC)</span>
+            </div>
+            <div class="wh-legend-item">
+              <div class="wh-legend-shape"><svg width="20" height="20" viewBox="0 0 20 20"><polygon points="10,2 18,17 2,17" fill="#FF1744" stroke="#fff" stroke-width="1.5"/><text x="10" y="15" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold">G</text></svg></div>
+              <span>Kho Giao Xe Tải (GXT)</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

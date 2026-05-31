@@ -62,7 +62,7 @@ const GHN_WAREHOUSES = [
   { id: 49, name: 'BC Trực Ninh', type: 'BC', province: 'Nam Định', district: 'Huyện Trực Ninh', lat: 20.2537317, lng: 106.2230461, om: 'H.Đ.Hiếu' },
   { id: 50, name: 'BC Xóm 3 - Hải Hậu', type: 'BC', province: 'Nam Định', district: 'Huyện Hải Hậu', lat: 20.14398, lng: 106.221632, om: 'H.Đ.Hiếu' },
   { id: 51, name: 'BC Xóm 4 - Giao Thủy', type: 'BC', province: 'Nam Định', district: 'Huyện Giao Thủy', lat: 20.24472, lng: 106.403566, om: 'H.Đ.Hiếu' },
-  { id: 52, name: 'Kho GXT Mỹ Lộc - Nam Định', type: 'GXT', province: 'Nam Định', district: 'Huyện Mỹ Lộc', lat: 20.465686, lng: 106.05079, om: 'H.Đ.Hiếu' },
+  { id: 52, name: 'Kho GXT Mỹ Lộc - Nam Định', type: 'GXT', province: 'Nam Định', district: 'Huyện Mỹ Lộc', lat: 20.405022, lng: 106.148277, om: 'H.Đ.Hiếu' },
 
   // === SHEET 2: Khu vực Tây Bắc (N.S.Tuấn) ===
   // --- Yên Bái ---
@@ -172,6 +172,6 @@ const GHN_STATS = {
   total: GHN_WAREHOUSES.length,
   provinces: [...new Set(GHN_WAREHOUSES.map(w => w.province))],
   types: { BC: 'Bưu Cục', KTC: 'Kho Chuyển Tiếp', GXT: 'Kho Giao Xe Tải' },
-  typeColors: { BC: '#4fd1c5', KTC: '#f6ad55', GXT: '#fc8181' },
+  typeColors: { BC: '#00E5FF', KTC: '#FF6D00', GXT: '#FF1744' },
   typeIcons: { BC: '📮', KTC: '🏭', GXT: '🚛' }
 };

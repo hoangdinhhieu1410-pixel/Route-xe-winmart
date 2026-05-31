@@ -10,19 +10,19 @@ const WarehouseMap = (() => {
   let selectedTypes = new Set();
   let openDropdown = null;
 
-  // Province colors
+  // Province colors — vibrant & high-contrast
   const PROVINCE_COLORS = {
-    'Vĩnh Phúc': '#667eea',
-    'Hà Nam': '#f093fb',
-    'Ninh Bình': '#4fd1c5',
-    'Nam Định': '#f6ad55',
-    'Yên Bái': '#fc8181',
-    'Sơn La': '#68d391',
-    'Lào Cai': '#63b3ed',
-    'Phú Thọ': '#d53f8c',
-    'Hòa Bình': '#9f7aea',
-    'Lai Châu': '#ed8936',
-    'Điện Biên': '#48bb78'
+    'Vĩnh Phúc': '#536DFE',
+    'Hà Nam': '#E040FB',
+    'Ninh Bình': '#00BFA5',
+    'Nam Định': '#FFD740',
+    'Yên Bái': '#FF5252',
+    'Sơn La': '#69F0AE',
+    'Lào Cai': '#40C4FF',
+    'Phú Thọ': '#FF4081',
+    'Hòa Bình': '#B388FF',
+    'Lai Châu': '#FFAB40',
+    'Điện Biên': '#64FFDA'
   };
 
   function init() {
@@ -129,19 +129,54 @@ const WarehouseMap = (() => {
 
   function createMarkerIcon(type, province) {
     const color = GHN_STATS.typeColors[type] || '#888';
-    const size = type === 'KTC' ? 16 : type === 'GXT' ? 14 : 10;
-    const border = type === 'KTC' ? '3px solid #fff' : type === 'GXT' ? '2px solid #fff' : '2px solid rgba(255,255,255,0.6)';
-    
+    const provColor = PROVINCE_COLORS[province] || '#888';
+
+    if (type === 'KTC') {
+      // ★ Kho Chuyển Tiếp — large diamond shape
+      return L.divIcon({
+        className: 'wh-marker-ktc',
+        html: `<div style="position:relative;width:32px;height:32px;">
+          <svg width="32" height="32" viewBox="0 0 32 32">
+            <polygon points="16,2 30,16 16,30 2,16" fill="${color}" stroke="#fff" stroke-width="2.5"/>
+            <text x="16" y="19" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">K</text>
+          </svg>
+          <div style="position:absolute;top:-2px;left:-2px;width:36px;height:36px;border-radius:50%;
+            background:${color}30;filter:blur(6px);z-index:-1;animation:pulse-glow 2s infinite"></div>
+        </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+    }
+
+    if (type === 'GXT') {
+      // ★ Kho Giao Xe Tải — large triangle pointing up
+      return L.divIcon({
+        className: 'wh-marker-gxt',
+        html: `<div style="position:relative;width:30px;height:30px;">
+          <svg width="30" height="30" viewBox="0 0 30 30">
+            <polygon points="15,2 28,26 2,26" fill="${color}" stroke="#fff" stroke-width="2.5"/>
+            <text x="15" y="22" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">G</text>
+          </svg>
+          <div style="position:absolute;top:-2px;left:-2px;width:34px;height:34px;border-radius:50%;
+            background:${color}30;filter:blur(6px);z-index:-1;animation:pulse-glow 2.5s infinite"></div>
+        </div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+    }
+
+    // ★ Bưu Cục — circle with inner dot
     return L.divIcon({
-      className: 'wh-marker',
+      className: 'wh-marker-bc',
       html: `<div style="
-        width:${size}px; height:${size}px; border-radius:50%;
-        background:${color}; border:${border};
-        box-shadow: 0 0 ${size}px ${color}80;
-        transition: transform 0.2s;
-      "></div>`,
-      iconSize: [size, size],
-      iconAnchor: [size/2, size/2]
+        width:18px; height:18px; border-radius:50%;
+        background:${color}; border:2.5px solid #fff;
+        box-shadow: 0 0 10px ${color}90, 0 2px 6px rgba(0,0,0,0.4);
+        transition: transform 0.2s ease;
+        display:flex; align-items:center; justify-content:center;
+      "><div style="width:6px;height:6px;border-radius:50%;background:#fff;opacity:0.9"></div></div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
     });
   }
 
