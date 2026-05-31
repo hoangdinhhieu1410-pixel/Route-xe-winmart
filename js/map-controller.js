@@ -88,7 +88,8 @@ const MapController = {
           <div class="popup-title">🏭 ${w.name}</div>
           <div class="popup-address">Tọa độ: ${w.lat.toFixed(6)}, ${w.lng.toFixed(6)}</div>
         `, { className: 'custom-popup' });
-    });\n  },
+    });
+  },
 
   // ==============================
   // Vẽ thêm Bưu Cục + Winmart lên bản đồ route
