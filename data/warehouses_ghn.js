@@ -1,0 +1,177 @@
+// ============================================
+// 🏭 DỮ LIỆU KHO GHN - Bưu Cục, Kho Chuyển Tiếp, Kho Giao Xe Tải
+// ============================================
+
+const GHN_WAREHOUSES = [
+  // === SHEET 1: Khu vực Route xe hiện tại (H.Đ.Hiếu) ===
+  // --- Vĩnh Phúc ---
+  { id: 1, name: 'Kho Chuyển Tiếp Vĩnh Phúc', type: 'KTC', province: 'Vĩnh Phúc', district: 'Huyện Bình Xuyên', lat: 21.3047376, lng: 105.6523629, om: 'H.Đ.Hiếu' },
+  { id: 2, name: 'BC 85 Nguyễn Tất Thành - Vĩnh Yên', type: 'BC', province: 'Vĩnh Phúc', district: 'TP. Vĩnh Yên', lat: 21.32320939, lng: 105.6107953, om: 'H.Đ.Hiếu' },
+  { id: 3, name: 'BC KĐT Phúc Sơn - Vĩnh Tường', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Vĩnh Tường', lat: 21.237061, lng: 105.492402, om: 'H.Đ.Hiếu' },
+  { id: 4, name: 'BC Khu Đồng Cổng - Tam Dương', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Tam Dương', lat: 21.378012, lng: 105.540277, om: 'H.Đ.Hiếu' },
+  { id: 5, name: 'BC Lê Đức Toản - Phúc Yên', type: 'BC', province: 'Vĩnh Phúc', district: 'TP. Phúc Yên', lat: 21.2279771, lng: 105.699958, om: 'H.Đ.Hiếu' },
+  { id: 6, name: 'BC Lê Hồng Phong - Vĩnh Yên', type: 'BC', province: 'Vĩnh Phúc', district: 'TP. Vĩnh Yên', lat: 21.2951563, lng: 105.5802109, om: 'H.Đ.Hiếu' },
+  { id: 7, name: 'BC TĐC Đường DT310 - Bình Xuyên', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Bình Xuyên', lat: 21.337665, lng: 105.659864, om: 'H.Đ.Hiếu' },
+  { id: 8, name: 'BC TDP Long Cương - Lập Thạch', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Lập Thạch', lat: 21.406114, lng: 105.45714, om: 'H.Đ.Hiếu' },
+  { id: 9, name: 'BC TDP Nho Lâm - Yên Lạc', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Yên Lạc', lat: 21.221849, lng: 105.563348, om: 'H.Đ.Hiếu' },
+  { id: 10, name: 'BC TDP Thắng Lợi - Bình Xuyên', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Bình Xuyên', lat: 21.257348, lng: 105.661569, om: 'H.Đ.Hiếu' },
+  { id: 11, name: 'BC TDP Văn Sơn - Lập Thạch', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Lập Thạch', lat: 21.405989, lng: 105.460407, om: 'H.Đ.Hiếu' },
+  { id: 12, name: 'BC Thôn Hòa Bình - Sông Lô', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Sông Lô', lat: 21.46001, lng: 105.34516, om: 'H.Đ.Hiếu' },
+  { id: 13, name: 'BC Thôn Làng Mạ - Tam Dương', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Tam Dương', lat: 21.42848, lng: 105.589437, om: 'H.Đ.Hiếu' },
+  { id: 14, name: 'BC Thôn Lãng Sơn - Sông Lô', type: 'BC', province: 'Vĩnh Phúc', district: 'Huyện Sông Lô', lat: 21.46973, lng: 105.37879, om: 'H.Đ.Hiếu' },
+  { id: 15, name: 'BC Thôn Xuân Hòa 1 - Phúc Yên', type: 'BC', province: 'Vĩnh Phúc', district: 'TP. Phúc Yên', lat: 21.293161, lng: 105.714988, om: 'H.Đ.Hiếu' },
+  { id: 16, name: 'Kho GXT Bình Xuyên - Vĩnh Phúc', type: 'GXT', province: 'Vĩnh Phúc', district: 'Huyện Bình Xuyên', lat: 21.305143, lng: 105.652361, om: 'H.Đ.Hiếu' },
+
+  // --- Hà Nam ---
+  { id: 17, name: 'BC 150 Trần Hưng Đạo - Bình Lục', type: 'BC', province: 'Hà Nam', district: 'Huyện Bình Lục', lat: 20.484271, lng: 106.027276, om: 'H.Đ.Hiếu' },
+  { id: 18, name: 'BC 217A Trường Chinh - Phủ Lý', type: 'BC', province: 'Hà Nam', district: 'TP. Phủ Lý', lat: 20.535231, lng: 105.91641, om: 'H.Đ.Hiếu' },
+  { id: 19, name: 'BC 38 Lê Quý Đôn - Duy Tiên', type: 'BC', province: 'Hà Nam', district: 'TX. Duy Tiên', lat: 20.64154, lng: 105.994352, om: 'H.Đ.Hiếu' },
+  { id: 20, name: 'BC 77 KĐT Yết Kiều - Phủ Lý', type: 'BC', province: 'Hà Nam', district: 'TP. Phủ Lý', lat: 20.531611, lng: 105.923278, om: 'H.Đ.Hiếu' },
+  { id: 21, name: 'BC Biên Hòa - Kim Bảng', type: 'BC', province: 'Hà Nam', district: 'Huyện Kim Bảng', lat: 20.623416, lng: 105.89309, om: 'H.Đ.Hiếu' },
+  { id: 22, name: 'BC QL38B Yên Bắc - Duy Tiên', type: 'BC', province: 'Hà Nam', district: 'Huyện Thanh Liêm', lat: 20.6502151, lng: 105.9542174, om: 'H.Đ.Hiếu' },
+  { id: 23, name: 'BC QL21A - Kim Bảng', type: 'BC', province: 'Hà Nam', district: 'Huyện Kim Bảng', lat: 20.568535, lng: 105.86474, om: 'H.Đ.Hiếu' },
+  { id: 24, name: 'BC Thôn 1 Tâng - Thanh Liêm', type: 'BC', province: 'Hà Nam', district: 'Huyện Thanh Liêm', lat: 20.460357, lng: 105.917801, om: 'H.Đ.Hiếu' },
+  { id: 25, name: 'BC Thôn 1 Phù Vân - Phủ Lý', type: 'BC', province: 'Hà Nam', district: 'TP. Phủ Lý', lat: 20.55094847, lng: 105.8952312, om: 'H.Đ.Hiếu' },
+  { id: 26, name: 'BC Vĩnh Trụ - Lý Nhân', type: 'BC', province: 'Hà Nam', district: 'Huyện Lý Nhân', lat: 20.553684, lng: 106.039105, om: 'H.Đ.Hiếu' },
+  { id: 27, name: 'BC Xã Nhật Tựu - Kim Bảng', type: 'BC', province: 'Hà Nam', district: 'Huyện Kim Bảng', lat: 20.635606, lng: 105.898405, om: 'H.Đ.Hiếu' },
+
+  // --- Ninh Bình ---
+  { id: 28, name: 'BC 214 Tuệ Tĩnh - Ninh Bình', type: 'BC', province: 'Ninh Bình', district: 'TP. Ninh Bình', lat: 20.2461936, lng: 105.9595693, om: 'H.Đ.Hiếu' },
+  { id: 29, name: 'BC 26 Phạm Thận Duật - Ninh Bình', type: 'BC', province: 'Ninh Bình', district: 'TP. Ninh Bình', lat: 20.246997, lng: 105.995905, om: 'H.Đ.Hiếu' },
+  { id: 30, name: 'BC 64 Trần Hưng Đạo - Ninh Bình', type: 'BC', province: 'Ninh Bình', district: 'TP. Ninh Bình', lat: 20.286076, lng: 105.958887, om: 'H.Đ.Hiếu' },
+  { id: 31, name: 'BC Điềm Khê - Gia Viễn', type: 'BC', province: 'Ninh Bình', district: 'Huyện Gia Viễn', lat: 20.303406, lng: 105.872487, om: 'H.Đ.Hiếu' },
+  { id: 32, name: 'BC Gia Viễn', type: 'BC', province: 'Ninh Bình', district: 'Huyện Gia Viễn', lat: 20.346249, lng: 105.850577, om: 'H.Đ.Hiếu' },
+  { id: 33, name: 'BC Lạc Thiện - Kim Sơn', type: 'BC', province: 'Ninh Bình', district: 'Huyện Kim Sơn', lat: 20.098931, lng: 106.103898, om: 'H.Đ.Hiếu' },
+  { id: 34, name: 'BC Ngô Thì Nhậm - Tam Điệp', type: 'BC', province: 'Ninh Bình', district: 'TP. Tam Điệp', lat: 20.1467891, lng: 105.9227752, om: 'H.Đ.Hiếu' },
+  { id: 35, name: 'BC Nguyễn Văn Hoan - Nho Quan', type: 'BC', province: 'Ninh Bình', district: 'Huyện Nho Quan', lat: 20.311578, lng: 105.751131, om: 'H.Đ.Hiếu' },
+  { id: 36, name: 'BC Phố Rịa - Nho Quan', type: 'BC', province: 'Ninh Bình', district: 'Huyện Nho Quan', lat: 20.236635, lng: 105.800529, om: 'H.Đ.Hiếu' },
+  { id: 37, name: 'BC QL10 - Yên Khánh', type: 'BC', province: 'Ninh Bình', district: 'Huyện Yên Khánh', lat: 20.171771, lng: 106.072393, om: 'H.Đ.Hiếu' },
+  { id: 38, name: 'BC QL12B - Yên Mô', type: 'BC', province: 'Ninh Bình', district: 'Huyện Yên Mô', lat: 20.162693, lng: 106.003394, om: 'H.Đ.Hiếu' },
+  { id: 39, name: 'Kho GXT Nho Quan - Ninh Bình', type: 'GXT', province: 'Ninh Bình', district: 'Huyện Nho Quan', lat: 20.353472, lng: 105.794278, om: 'H.Đ.Hiếu' },
+
+  // --- Nam Định ---
+  { id: 40, name: 'BC Đinh Đức Thiện - Ý Yên', type: 'BC', province: 'Nam Định', district: 'Huyện Ý Yên', lat: 20.289272, lng: 106.072365, om: 'H.Đ.Hiếu' },
+  { id: 41, name: 'BC Đò Quan - Nam Định', type: 'BC', province: 'Nam Định', district: 'TP. Nam Định', lat: 20.416445, lng: 106.182582, om: 'H.Đ.Hiếu' },
+  { id: 42, name: 'BC Trần Tự Khánh - Mỹ Lộc', type: 'BC', province: 'Nam Định', district: 'Huyện Mỹ Lộc', lat: 20.459306, lng: 106.156501, om: 'H.Đ.Hiếu' },
+  { id: 43, name: 'BC Khu 3 - Hải Hậu', type: 'BC', province: 'Nam Định', district: 'Huyện Hải Hậu', lat: 20.188909, lng: 106.291478, om: 'H.Đ.Hiếu' },
+  { id: 44, name: 'BC QL37B - Nghĩa Hưng', type: 'BC', province: 'Nam Định', district: 'Huyện Nghĩa Hưng', lat: 20.219002, lng: 106.187901, om: 'H.Đ.Hiếu' },
+  { id: 45, name: 'BC QL38B Yên Khánh - Ý Yên', type: 'BC', province: 'Nam Định', district: 'Huyện Ý Yên', lat: 20.333001, lng: 106.009734, om: 'H.Đ.Hiếu' },
+  { id: 46, name: 'BC QL21B - Mỹ Lộc', type: 'BC', province: 'Nam Định', district: 'Huyện Mỹ Lộc', lat: 20.447713, lng: 106.114601, om: 'H.Đ.Hiếu' },
+  { id: 47, name: 'BC 13 Nguyễn Bỉnh Khiêm - Nam Định', type: 'BC', province: 'Nam Định', district: 'TP. Nam Định', lat: 20.436015, lng: 106.154471, om: 'H.Đ.Hiếu' },
+  { id: 48, name: 'BC Thiện Vịnh - Vụ Bản', type: 'BC', province: 'Nam Định', district: 'Huyện Vụ Bản', lat: 20.37715, lng: 106.079322, om: 'H.Đ.Hiếu' },
+  { id: 49, name: 'BC Trực Ninh', type: 'BC', province: 'Nam Định', district: 'Huyện Trực Ninh', lat: 20.2537317, lng: 106.2230461, om: 'H.Đ.Hiếu' },
+  { id: 50, name: 'BC Xóm 3 - Hải Hậu', type: 'BC', province: 'Nam Định', district: 'Huyện Hải Hậu', lat: 20.14398, lng: 106.221632, om: 'H.Đ.Hiếu' },
+  { id: 51, name: 'BC Xóm 4 - Giao Thủy', type: 'BC', province: 'Nam Định', district: 'Huyện Giao Thủy', lat: 20.24472, lng: 106.403566, om: 'H.Đ.Hiếu' },
+  { id: 52, name: 'Kho GXT Mỹ Lộc - Nam Định', type: 'GXT', province: 'Nam Định', district: 'Huyện Mỹ Lộc', lat: 20.465686, lng: 106.05079, om: 'H.Đ.Hiếu' },
+
+  // === SHEET 2: Khu vực Tây Bắc (N.S.Tuấn) ===
+  // --- Yên Bái ---
+  { id: 53, name: 'KTC Yên Bái', type: 'KTC', province: 'Yên Bái', district: 'TP. Yên Bái', lat: 21.696316, lng: 104.864495, om: 'N.S.Tuấn' },
+  { id: 54, name: 'BC 02 Phó Đức Chính - Yên Bái', type: 'BC', province: 'Yên Bái', district: 'TP. Yên Bái', lat: 21.6976323, lng: 104.872893, om: 'N.S.Tuấn' },
+  { id: 55, name: 'BC 650 Đinh Tiên Hoàng - Yên Bái', type: 'BC', province: 'Yên Bái', district: 'TP. Yên Bái', lat: 21.73142, lng: 104.9285813, om: 'N.S.Tuấn' },
+  { id: 56, name: 'BC 244 Nguyễn Tất Thành - Lục Yên', type: 'BC', province: 'Yên Bái', district: 'Huyện Lục Yên', lat: 22.11073, lng: 104.763187, om: 'N.S.Tuấn' },
+  { id: 57, name: 'BC 290/9B Đại Hồng - Yên Bình', type: 'BC', province: 'Yên Bái', district: 'Huyện Yên Bình', lat: 21.725287, lng: 104.970827, om: 'N.S.Tuấn' },
+  { id: 58, name: 'BC Cầu Thia - Nghĩa Lộ', type: 'BC', province: 'Yên Bái', district: 'TX. Nghĩa Lộ', lat: 21.588361, lng: 104.519038, om: 'N.S.Tuấn' },
+  { id: 59, name: 'BC Hồng Hà - Văn Yên', type: 'BC', province: 'Yên Bái', district: 'Huyện Văn Yên', lat: 21.88095, lng: 104.681967, om: 'N.S.Tuấn' },
+  { id: 60, name: 'BC Km 24 Bảo Ái - Yên Bình', type: 'BC', province: 'Yên Bái', district: 'Huyện Yên Bình', lat: 21.8848459, lng: 104.8384664, om: 'N.S.Tuấn' },
+  { id: 61, name: 'BC Ngã Ba Khe - Văn Chấn', type: 'BC', province: 'Yên Bái', district: 'Huyện Văn Chấn', lat: 21.489861, lng: 104.72425, om: 'N.S.Tuấn' },
+  { id: 62, name: 'BC Cổ Phúc - Trấn Yên', type: 'BC', province: 'Yên Bái', district: 'Huyện Trấn Yên', lat: 21.76219, lng: 104.819229, om: 'N.S.Tuấn' },
+  { id: 63, name: 'Kho GXT Yên Bái', type: 'GXT', province: 'Yên Bái', district: 'TP. Yên Bái', lat: 21.696316, lng: 104.864495, om: 'N.S.Tuấn' },
+
+  // --- Sơn La ---
+  { id: 64, name: 'KTC Sơn La', type: 'KTC', province: 'Sơn La', district: 'TP. Sơn La', lat: 21.269413, lng: 103.981116, om: 'N.S.Tuấn' },
+  { id: 65, name: 'BC 354 Trần Đăng Ninh - Sơn La', type: 'BC', province: 'Sơn La', district: 'TP. Sơn La', lat: 21.3072712, lng: 103.9286525, om: 'N.S.Tuấn' },
+  { id: 66, name: 'BC 686 Lê Duẩn - Sơn La', type: 'BC', province: 'Sơn La', district: 'TP. Sơn La', lat: 21.28047, lng: 103.97502, om: 'N.S.Tuấn' },
+  { id: 67, name: 'BC 136 CMT8 - Sông Mã', type: 'BC', province: 'Sơn La', district: 'Huyện Sông Mã', lat: 21.0512968, lng: 103.7498952, om: 'N.S.Tuấn' },
+  { id: 68, name: 'BC 266 Đường 8/5 - Yên Châu', type: 'BC', province: 'Sơn La', district: 'Huyện Yên Châu', lat: 21.050848, lng: 104.308997, om: 'N.S.Tuấn' },
+  { id: 69, name: 'BC 563 TK3 - Bắc Yên', type: 'BC', province: 'Sơn La', district: 'Huyện Bắc Yên', lat: 21.246355, lng: 104.433398, om: 'N.S.Tuấn' },
+  { id: 70, name: 'BC 77 Hoàng Quốc Việt - Mộc Châu', type: 'BC', province: 'Sơn La', district: 'Huyện Mộc Châu', lat: 20.833394, lng: 104.66922, om: 'N.S.Tuấn' },
+  { id: 71, name: 'BC 36 Tô Hiệu - Mường La', type: 'BC', province: 'Sơn La', district: 'Huyện Mường La', lat: 21.506696, lng: 104.030247, om: 'N.S.Tuấn' },
+  { id: 72, name: 'BC TK1 - Thuận Châu', type: 'BC', province: 'Sơn La', district: 'Huyện Thuận Châu', lat: 21.448736, lng: 103.680149, om: 'N.S.Tuấn' },
+  { id: 73, name: 'BC TK10 - Mai Sơn', type: 'BC', province: 'Sơn La', district: 'Huyện Mai Sơn', lat: 21.20224, lng: 104.09125, om: 'N.S.Tuấn' },
+  { id: 74, name: 'BC TK6 - Phù Yên', type: 'BC', province: 'Sơn La', district: 'Huyện Phù Yên', lat: 21.265364, lng: 104.6449799, om: 'N.S.Tuấn' },
+  { id: 75, name: 'BC QL6 - Vân Hồ', type: 'BC', province: 'Sơn La', district: 'Huyện Vân Hồ', lat: 20.7769577, lng: 104.7694932, om: 'N.S.Tuấn' },
+  { id: 76, name: 'BC Hua Mường - Sốp Cộp', type: 'BC', province: 'Sơn La', district: 'Huyện Sốp Cộp', lat: 20.936674, lng: 103.597402, om: 'N.S.Tuấn' },
+  { id: 77, name: 'BC Mường Giàng - Quỳnh Nhai', type: 'BC', province: 'Sơn La', district: 'Huyện Quỳnh Nhai', lat: 21.6485875, lng: 103.6292622, om: 'N.S.Tuấn' },
+  { id: 78, name: 'Kho GXT Sơn La', type: 'GXT', province: 'Sơn La', district: 'TP. Sơn La', lat: 21.269413, lng: 103.981116, om: 'N.S.Tuấn' },
+
+  // --- Lào Cai ---
+  { id: 79, name: 'KTC Lào Cai', type: 'KTC', province: 'Lào Cai', district: 'TP. Lào Cai', lat: 22.500077, lng: 103.957676, om: 'N.S.Tuấn' },
+  { id: 80, name: 'BC 052 Ngọc Uyển - Bắc Hà', type: 'BC', province: 'Lào Cai', district: 'Huyện Bắc Hà', lat: 22.533284, lng: 104.291139, om: 'N.S.Tuấn' },
+  { id: 81, name: 'BC 148 Hoàng Quốc Việt - Lào Cai', type: 'BC', province: 'Lào Cai', district: 'TP. Lào Cai', lat: 22.430257, lng: 104.010948, om: 'N.S.Tuấn' },
+  { id: 82, name: 'BC 155 Điện Biên Phủ - Sa Pa', type: 'BC', province: 'Lào Cai', district: 'TX. Sa Pa', lat: 22.348674, lng: 103.856294, om: 'N.S.Tuấn' },
+  { id: 83, name: 'BC 341 Nguyễn Tất Thành - Bảo Yên', type: 'BC', province: 'Lào Cai', district: 'Huyện Bảo Yên', lat: 22.230917, lng: 104.478426, om: 'N.S.Tuấn' },
+  { id: 84, name: 'BC Duyên Hải - Lào Cai', type: 'BC', province: 'Lào Cai', district: 'TP. Lào Cai', lat: 22.4884422, lng: 103.9637091, om: 'N.S.Tuấn' },
+  { id: 85, name: 'BC Khánh Yên - Văn Bàn', type: 'BC', province: 'Lào Cai', district: 'Huyện Văn Bàn', lat: 22.0886897, lng: 104.2558363, om: 'N.S.Tuấn' },
+  { id: 86, name: 'BC Liên Hà 3 - Bảo Hà', type: 'BC', province: 'Lào Cai', district: 'Huyện Bảo Yên', lat: 22.180426, lng: 104.354133, om: 'N.S.Tuấn' },
+  { id: 87, name: 'BC Phố Lê Thanh - Lào Cai', type: 'BC', province: 'Lào Cai', district: 'TP. Lào Cai', lat: 22.471867, lng: 103.975093, om: 'N.S.Tuấn' },
+  { id: 88, name: 'BC Mã Tuyển 3 - Mường Khương', type: 'BC', province: 'Lào Cai', district: 'Huyện Mường Khương', lat: 22.759348, lng: 104.11219, om: 'N.S.Tuấn' },
+  { id: 89, name: 'BC Tả Hà 3 - Bảo Thắng', type: 'BC', province: 'Lào Cai', district: 'Huyện Bảo Thắng', lat: 22.318188, lng: 104.178798, om: 'N.S.Tuấn' },
+  { id: 90, name: 'BC Si Ma Cai', type: 'BC', province: 'Lào Cai', district: 'Huyện Si Ma Cai', lat: 22.688126, lng: 104.2691, om: 'N.S.Tuấn' },
+  { id: 91, name: 'BC Tổ 7 - Bát Xát', type: 'BC', province: 'Lào Cai', district: 'Huyện Bát Xát', lat: 22.532578, lng: 103.896318, om: 'N.S.Tuấn' },
+  { id: 92, name: 'Kho GXT Lào Cai', type: 'GXT', province: 'Lào Cai', district: 'TP. Lào Cai', lat: 22.499907, lng: 103.958048, om: 'N.S.Tuấn' },
+
+  // --- Phú Thọ ---
+  { id: 93, name: 'KTC Phú Thọ 01', type: 'KTC', province: 'Phú Thọ', district: 'TP. Việt Trì', lat: 21.32625, lng: 105.3248889, om: 'N.S.Tuấn' },
+  { id: 94, name: 'BC 1165 ĐL Hùng Vương - Việt Trì', type: 'BC', province: 'Phú Thọ', district: 'TP. Việt Trì', lat: 21.306131, lng: 105.407108, om: 'N.S.Tuấn' },
+  { id: 95, name: 'BC 132 Tân Long - Yên Lập', type: 'BC', province: 'Phú Thọ', district: 'Huyện Yên Lập', lat: 21.352697, lng: 105.059377, om: 'N.S.Tuấn' },
+  { id: 96, name: 'BC 238 Chi Lăng - Phù Ninh', type: 'BC', province: 'Phú Thọ', district: 'Huyện Phù Ninh', lat: 21.408465, lng: 105.306385, om: 'N.S.Tuấn' },
+  { id: 97, name: 'BC Đồng Xuân - Thanh Ba', type: 'BC', province: 'Phú Thọ', district: 'Huyện Thanh Ba', lat: 21.497321, lng: 105.123702, om: 'N.S.Tuấn' },
+  { id: 98, name: 'BC Đông Trung - Thanh Thủy', type: 'BC', province: 'Phú Thọ', district: 'Huyện Thanh Thủy', lat: 21.108692, lng: 105.288338, om: 'N.S.Tuấn' },
+  { id: 99, name: 'BC Lạc Long Quân - Hạ Hòa', type: 'BC', province: 'Phú Thọ', district: 'Huyện Hạ Hòa', lat: 21.551306, lng: 105.011167, om: 'N.S.Tuấn' },
+  { id: 100, name: 'BC Hợp Hải - Lâm Thao', type: 'BC', province: 'Phú Thọ', district: 'Huyện Lâm Thao', lat: 21.3084146, lng: 105.2815617, om: 'N.S.Tuấn' },
+  { id: 101, name: 'BC Hương Nộn - Tam Nông', type: 'BC', province: 'Phú Thọ', district: 'Huyện Tam Nông', lat: 21.2759169, lng: 105.261121, om: 'N.S.Tuấn' },
+  { id: 102, name: 'BC Khu 1 Thanh Minh - Phú Thọ', type: 'BC', province: 'Phú Thọ', district: 'TX. Phú Thọ', lat: 21.4015768, lng: 105.1998723, om: 'N.S.Tuấn' },
+  { id: 103, name: 'BC KP10 Tân Phú - Tân Sơn', type: 'BC', province: 'Phú Thọ', district: 'Huyện Tân Sơn', lat: 21.21393, lng: 105.023784, om: 'N.S.Tuấn' },
+  { id: 104, name: 'BC KP10 Trường Chinh - Việt Trì', type: 'BC', province: 'Phú Thọ', district: 'TP. Việt Trì', lat: 21.3604885, lng: 105.3563265, om: 'N.S.Tuấn' },
+  { id: 105, name: 'BC Đoàn Kết 19/5 - Đoan Hùng', type: 'BC', province: 'Phú Thọ', district: 'Huyện Đoan Hùng', lat: 21.625015, lng: 105.180256, om: 'N.S.Tuấn' },
+  { id: 106, name: 'BC QL2 - Phù Ninh', type: 'BC', province: 'Phú Thọ', district: 'Huyện Phù Ninh', lat: 21.420476, lng: 105.295814, om: 'N.S.Tuấn' },
+  { id: 107, name: 'BC QL32 Bình Dân - Thanh Sơn', type: 'BC', province: 'Phú Thọ', district: 'Huyện Thanh Sơn', lat: 21.195806, lng: 105.172083, om: 'N.S.Tuấn' },
+  { id: 108, name: 'BC Tân Lập - Cẩm Khê', type: 'BC', province: 'Phú Thọ', district: 'Huyện Cẩm Khê', lat: 21.4259914, lng: 105.1335446, om: 'N.S.Tuấn' },
+  { id: 109, name: 'Kho GXT Việt Trì - Phú Thọ', type: 'GXT', province: 'Phú Thọ', district: 'TP. Việt Trì', lat: 21.32625, lng: 105.3248889, om: 'N.S.Tuấn' },
+
+  // --- Hòa Bình ---
+  { id: 110, name: 'KTC Hòa Bình 02', type: 'KTC', province: 'Hòa Bình', district: 'TP. Hòa Bình', lat: 20.7986826, lng: 105.3566614, om: 'N.S.Tuấn' },
+  { id: 111, name: 'BC 104 Hòa Bình - Tân Hòa', type: 'BC', province: 'Hòa Bình', district: 'TP. Hòa Bình', lat: 20.843119, lng: 105.333231, om: 'N.S.Tuấn' },
+  { id: 112, name: 'BC 362 QL6 - Lương Sơn', type: 'BC', province: 'Hòa Bình', district: 'Huyện Lương Sơn', lat: 20.870248, lng: 105.518925, om: 'N.S.Tuấn' },
+  { id: 113, name: 'BC Khu 1 Chi Nê - Lạc Thủy', type: 'BC', province: 'Hòa Bình', district: 'Huyện Lạc Thủy', lat: 20.497124, lng: 105.775682, om: 'N.S.Tuấn' },
+  { id: 114, name: 'BC AH13 - Kỳ Sơn', type: 'BC', province: 'Hòa Bình', district: 'Huyện Kỳ Sơn', lat: 20.887936, lng: 105.367887, om: 'N.S.Tuấn' },
+  { id: 115, name: 'BC Phố Bưởi - Kim Bôi', type: 'BC', province: 'Hòa Bình', district: 'Huyện Kim Bôi', lat: 20.682237, lng: 105.525783, om: 'N.S.Tuấn' },
+  { id: 116, name: 'BC QL12B - Tân Lạc', type: 'BC', province: 'Hòa Bình', district: 'Huyện Tân Lạc', lat: 20.616878, lng: 105.27875, om: 'N.S.Tuấn' },
+  { id: 117, name: 'BC QL6 - Tân Lạc', type: 'BC', province: 'Hòa Bình', district: 'Huyện Tân Lạc', lat: 20.61957, lng: 105.27289, om: 'N.S.Tuấn' },
+  { id: 118, name: 'BC QL6 - Cao Phong', type: 'BC', province: 'Hòa Bình', district: 'Huyện Cao Phong', lat: 20.71548, lng: 105.325286, om: 'N.S.Tuấn' },
+  { id: 119, name: 'BC Lốc Mới - Lạc Sơn', type: 'BC', province: 'Hòa Bình', district: 'Huyện Lạc Sơn', lat: 20.463113, lng: 105.450338, om: 'N.S.Tuấn' },
+  { id: 120, name: 'BC Hàng Trạm - Yên Thủy', type: 'BC', province: 'Hòa Bình', district: 'Huyện Yên Thủy', lat: 20.4026077, lng: 105.6188316, om: 'N.S.Tuấn' },
+  { id: 121, name: 'BC Trần Hưng Đạo - Hòa Bình', type: 'BC', province: 'Hòa Bình', district: 'TP. Hòa Bình', lat: 20.821053, lng: 105.354971, om: 'N.S.Tuấn' },
+  { id: 122, name: 'BC Liên Phương - Đà Bắc', type: 'BC', province: 'Hòa Bình', district: 'Huyện Đà Bắc', lat: 20.877984, lng: 105.252014, om: 'N.S.Tuấn' },
+  { id: 123, name: 'Kho GXT Hòa Bình', type: 'GXT', province: 'Hòa Bình', district: 'TP. Hòa Bình', lat: 20.799334, lng: 105.356854, om: 'N.S.Tuấn' },
+
+  // --- Lai Châu ---
+  { id: 124, name: 'BC 11 Trường Trinh - Nậm Nhùn', type: 'BC', province: 'Lai Châu', district: 'Huyện Nậm Nhùn', lat: 22.14181, lng: 103.02514, om: 'N.S.Tuấn' },
+  { id: 125, name: 'BC 1103 Lê Lợi - Tân Uyên', type: 'BC', province: 'Lai Châu', district: 'Huyện Tân Uyên', lat: 22.164602, lng: 103.759445, om: 'N.S.Tuấn' },
+  { id: 126, name: 'BC 112 Võ Nguyên Giáp - Tam Đường', type: 'BC', province: 'Lai Châu', district: 'Huyện Tam Đường', lat: 22.31926, lng: 103.628837, om: 'N.S.Tuấn' },
+  { id: 127, name: 'BC 131 Lê Duẩn - Lai Châu', type: 'BC', province: 'Lai Châu', district: 'TP. Lai Châu', lat: 22.399436, lng: 103.469416, om: 'N.S.Tuấn' },
+  { id: 128, name: 'BC 61 Lê Lợi - Sìn Hồ', type: 'BC', province: 'Lai Châu', district: 'Huyện Sìn Hồ', lat: 22.361568, lng: 103.24764, om: 'N.S.Tuấn' },
+  { id: 129, name: 'BC 83 Điện Biên Phủ - Mường Tè', type: 'BC', province: 'Lai Châu', district: 'Huyện Mường Tè', lat: 22.380991, lng: 102.821473, om: 'N.S.Tuấn' },
+  { id: 130, name: 'BC 028 Thanh Niên - Than Uyên', type: 'BC', province: 'Lai Châu', district: 'Huyện Than Uyên', lat: 21.960758, lng: 103.885656, om: 'N.S.Tuấn' },
+  { id: 131, name: 'BC Tây Sơn - Phong Thổ', type: 'BC', province: 'Lai Châu', district: 'Huyện Phong Thổ', lat: 22.5293267, lng: 103.3520123, om: 'N.S.Tuấn' },
+
+  // --- Điện Biên ---
+  { id: 132, name: 'BC Tân Thanh - Điện Biên Phủ', type: 'BC', province: 'Điện Biên', district: 'TP. Điện Biên Phủ', lat: 21.3984142, lng: 103.0185953, om: 'N.S.Tuấn' },
+  { id: 133, name: 'BC TDP 1 - Mường Chà', type: 'BC', province: 'Điện Biên', district: 'Huyện Mường Chà', lat: 21.750274, lng: 103.090963, om: 'N.S.Tuấn' },
+  { id: 134, name: 'BC TT Tủa Chùa', type: 'BC', province: 'Điện Biên', district: 'Huyện Tủa Chùa', lat: 21.85351, lng: 103.34946, om: 'N.S.Tuấn' },
+  { id: 135, name: 'BC TT Tuần Giáo', type: 'BC', province: 'Điện Biên', district: 'Huyện Tuần Giáo', lat: 21.585484, lng: 103.41462, om: 'N.S.Tuấn' },
+  { id: 136, name: 'BC Thôn 24 - Điện Biên', type: 'BC', province: 'Điện Biên', district: 'Huyện Điện Biên', lat: 21.3147426, lng: 103.0105036, om: 'N.S.Tuấn' },
+  { id: 137, name: 'BC TT Mường Ảng', type: 'BC', province: 'Điện Biên', district: 'Huyện Mường Ảng', lat: 21.523543, lng: 103.232993, om: 'N.S.Tuấn' },
+  { id: 138, name: 'BC Điện Biên Đông', type: 'BC', province: 'Điện Biên', district: 'Huyện Điện Biên Đông', lat: 21.297173, lng: 103.225228, om: 'N.S.Tuấn' },
+  { id: 139, name: 'BC Mường Nhé', type: 'BC', province: 'Điện Biên', district: 'Huyện Mường Nhé', lat: 22.194326, lng: 102.4544052, om: 'N.S.Tuấn' },
+];
+
+// Tổng hợp thống kê
+const GHN_STATS = {
+  total: GHN_WAREHOUSES.length,
+  provinces: [...new Set(GHN_WAREHOUSES.map(w => w.province))],
+  types: { BC: 'Bưu Cục', KTC: 'Kho Chuyển Tiếp', GXT: 'Kho Giao Xe Tải' },
+  typeColors: { BC: '#4fd1c5', KTC: '#f6ad55', GXT: '#fc8181' },
+  typeIcons: { BC: '📮', KTC: '🏭', GXT: '🚛' }
+};

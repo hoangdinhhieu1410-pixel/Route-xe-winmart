@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bản đồ hệ thống Kho GHN - Bưu Cục, Kho Chuyển Tiếp, Kho Giao Xe Tải">
+  <title>🏭 Bản Đồ Kho GHN</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ========== Warehouse Map Overrides ========== */
+    .wh-filters {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;
+    }
+    .wh-filter-group {
+      position: relative;
+    }
+    .wh-filter-btn {
+      background: var(--bg-glass); border: 1px solid var(--border-glass);
+      color: var(--text-primary); padding: 8px 16px; border-radius: var(--radius-sm);
+      cursor: pointer; font-size: 0.85rem; font-family: 'Inter', sans-serif;
+      transition: var(--transition-fast); display: flex; align-items: center; gap: 6px;
+      backdrop-filter: blur(10px); min-width: 140px; justify-content: space-between;
+    }
+    .wh-filter-btn:hover { border-color: var(--accent-blue); background: var(--bg-glass-hover); }
+    .wh-filter-btn.active { border-color: var(--accent-blue); box-shadow: var(--shadow-glow); }
+    .wh-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 1000;
+      background: rgba(15, 15, 26, 0.96); border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md); padding: 8px 0; min-width: 240px; max-height: 380px;
+      overflow-y: auto; backdrop-filter: blur(20px); box-shadow: var(--shadow-lg);
+      display: none;
+    }
+    .wh-dropdown.show { display: block; animation: fadeSlideDown 0.2s ease; }
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .wh-dropdown label {
+      display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+      cursor: pointer; font-size: 0.82rem; color: var(--text-secondary);
+      transition: var(--transition-fast);
+    }
+    .wh-dropdown label:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+    .wh-dropdown label.wh-select-all {
+      border-bottom: 1px solid var(--border-glass); padding-bottom: 10px; margin-bottom: 4px;
+      font-weight: 600; color: var(--text-primary);
+    }
+    .wh-dropdown input[type="checkbox"] {
+      accent-color: var(--accent-blue); width: 16px; height: 16px;
+    }
+    .wh-type-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+    }
+    /* Map stats bar */
+    .wh-stats-bar {
+      display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 0;
+    }
+    .wh-stat {
+      display: flex; align-items: center; gap: 6px; font-size: 0.82rem;
+      color: var(--text-secondary); background: var(--bg-glass);
+      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-glass);
+    }
+    .wh-stat strong { color: var(--text-primary); font-weight: 700; font-size: 1rem; }
+    /* Province color chips */
+    .province-chip {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem;
+      padding: 3px 8px; border-radius: 12px; background: var(--bg-glass);
+      border: 1px solid var(--border-glass); color: var(--text-secondary);
+    }
+    /* Map container override */
+    #wh-map { height: 600px; border-radius: var(--radius-md); }
+    /* Warehouse table */
+    .wh-table { max-height: 500px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-logo"><span class="icon">🏭</span> BẢN ĐỒ KHO GHN</div>
+      <span class="header-subtitle">Hệ thống Bưu Cục, Kho Chuyển Tiếp & Kho Giao Xe Tải</span>
+    </div>
+    <div class="province-tabs">
+      <a href="index.html" class="province-tab">🚛 Route Xe</a>
+      <button class="province-tab active">🏭 Bản Đồ Kho</button>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-glass" onclick="WarehouseMap.resetAll()">🔄 Reset</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ In báo cáo</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- KPI Stats -->
+    <section>
+      <div class="kpi-grid" id="wh-kpi-grid"></div>
+    </section>
+
+    <!-- Map Section -->
+    <section>
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🗺️</span> Bản Đồ Hệ Thống Kho</h2>
+          <div class="wh-filters">
+            <!-- Province Filter -->
+            <div class="wh-filter-group" id="province-filter-group">
+              <button class="wh-filter-btn" onclick="WarehouseMap.toggleDropdown('province')">
+                <span id="province-filter-label">🏛️ Tất cả tỉnh</span>
+                <span>▾</span>
+              </button>
+              <div class="wh-dropdown" id="province-dropdown">
+                <label class="wh-select-all">
+                  <input type="checkbox" id="prov-all" checked onchange="WarehouseMap.onProvSelectAll()">
+                  <strong>🏛️ Tất cả tỉnh</strong>
+                </label>
+                <div id="province-filter-list"></div>
+              </div>
+            </div>
+            <!-- Type Filter -->
+            <div class="wh-filter-group" id="type-filter-group">
+              <button class="wh-filter-btn" onclick="WarehouseMap.toggleDropdown('type')">
+                <span id="type-filter-label">📦 Tất cả loại kho</span>
+                <span>▾</span>
+              </button>
+              <div class="wh-dropdown" id="type-dropdown">
+                <label class="wh-select-all">
+                  <input type="checkbox" id="type-all" checked onchange="WarehouseMap.onTypeSelectAll()">
+                  <strong>📦 Tất cả loại kho</strong>
+                </label>
+                <div id="type-filter-list"></div>
+              </div>
+            </div>
+            <button class="btn btn-glass" onclick="WarehouseMap.fitAll()">🔍 Zoom fit</button>
+          </div>
+        </div>
+        <div class="wh-stats-bar" id="wh-stats-bar"></div>
+        <div class="panel-body">
+          <div id="wh-map"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Warehouse Table -->
+    <section style="margin-top:24px">
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>📋</span> Danh Sách Kho (<span id="wh-count">0</span>)</h2>
+          <div class="search-bar" style="margin:0">
+            <input type="text" id="wh-search" class="search-input"
+              placeholder="🔍 Tìm kiếm kho..." oninput="WarehouseMap.onSearch()">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="wh-table table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tên kho</th>
+                  <th>Loại</th>
+                  <th>Tỉnh</th>
+                  <th>Huyện</th>
+                  <th>Tọa độ</th>
+                  <th>OM</th>
+                </tr>
+              </thead>
+              <tbody id="wh-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="text-align:center;padding:40px 0 20px;color:var(--text-muted);font-size:0.8rem">
+      <p>🏭 GHN Warehouse Map v1.0 • 139 điểm kho • Leaflet + OpenStreetMap</p>
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="data/warehouses_ghn.js"></script>
+  <script src="js/warehouse-map.js"></script>
+</body>
+</html>
