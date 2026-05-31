@@ -114,13 +114,13 @@ const MapController = {
         const icon = L.divIcon({
           className: 'wh-marker-bc-route',
           html: `<div style="
-            width:14px; height:14px; border-radius:50%;
-            background:#00E5FF; border:2px solid #fff;
-            box-shadow: 0 0 8px #00E5FF90;
+            width:22px; height:22px; border-radius:50%;
+            background:#00E5FF; border:2.5px solid #fff;
+            box-shadow: 0 0 10px #00E5FF90, 0 2px 6px rgba(0,0,0,0.4);
             display:flex; align-items:center; justify-content:center;
-          "><div style="width:4px;height:4px;border-radius:50%;background:#fff"></div></div>`,
-          iconSize: [14, 14],
-          iconAnchor: [7, 7]
+          "><div style="width:7px;height:7px;border-radius:50%;background:#fff"></div></div>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
         });
         L.marker([bc.lat, bc.lng], { icon, zIndexOffset: 500 })
           .addTo(this.extraMarkersGroup)
