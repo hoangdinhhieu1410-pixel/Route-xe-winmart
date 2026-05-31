@@ -43,7 +43,7 @@ const WarehouseMap = (() => {
       GHN_STATS.total = GHN_WAREHOUSES.length;
       GHN_STATS.provinces = [...new Set(GHN_WAREHOUSES.map(w => w.province))];
       GHN_STATS.types['WM'] = 'Cửa hàng Winmart';
-      GHN_STATS.typeColors['WM'] = '#76FF03';
+      GHN_STATS.typeColors['WM'] = '#FFEA00';
       GHN_STATS.typeIcons['WM'] = '🏪';
     }
 
@@ -99,7 +99,7 @@ const WarehouseMap = (() => {
       BC: `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="${colors.BC}" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
       KTC: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="${colors.KTC}" stroke="#fff" stroke-width="1.5"/></svg>`,
       GXT: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,14 1,14" fill="${colors.GXT}" stroke="#fff" stroke-width="1.5"/></svg>`,
-      WM: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10.5,5.5 15.5,6.5 12,10 12.5,15 8,12.5 3.5,15 4,10 0.5,6.5 5.5,5.5" fill="${colors.WM || '#76FF03'}" stroke="#fff" stroke-width="1"/></svg>`
+      WM: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10.5,5.5 15.5,6.5 12,10 12.5,15 8,12.5 3.5,15 4,10 0.5,6.5 5.5,5.5" fill="${colors.WM || '#FFEA00'}" stroke="#fff" stroke-width="1"/></svg>`
     };
     list.innerHTML = Object.entries(types).map(([key, name]) => {
       return `<label>
@@ -213,17 +213,17 @@ const WarehouseMap = (() => {
       });
     }
 
-    // ★ Winmart — small green square
+    // ★ Winmart — small yellow star
     return L.divIcon({
       className: 'wh-marker-wm',
       html: `<div style="
-        width:10px; height:10px; border-radius:2px;
-        background:${color}; border:1.5px solid #fff;
-        box-shadow: 0 0 6px ${color}80;
+        width:12px; height:12px;
         transition: transform 0.2s ease;
-      "></div>`,
-      iconSize: [10, 10],
-      iconAnchor: [5, 5]
+      "><svg viewBox="0 0 12 12" width="12" height="12">
+        <polygon points="6,0.5 7.5,4 11.5,4.5 8.5,7 9.5,11 6,9 2.5,11 3.5,7 0.5,4.5 4.5,4" fill="${color}" stroke="#fff" stroke-width="0.8"/>
+      </svg></div>`,
+      iconSize: [12, 12],
+      iconAnchor: [6, 6]
     });
   }
 
