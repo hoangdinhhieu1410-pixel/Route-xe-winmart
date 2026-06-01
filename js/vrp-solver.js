@@ -79,71 +79,182 @@ const VRPSolver = {
   },
 
   // ==============================
-  // 📦 Chia chuyến (giới hạn 100km)
+  // 📦 GOM CỤM THEO HUYỆN — District-First Clustering
   // ==============================
-  buildTrips(stores, warehouse) {
-    const trips = [];
-    const MAX_KM = 100;
-    const sorted = [...stores].sort((a, b) =>
-      this.haversineDistance(a.lat, a.lng, warehouse.lat, warehouse.lng) -
-      this.haversineDistance(b.lat, b.lng, warehouse.lat, warehouse.lng)
-    );
 
-    let currentTrip = [], currentWeight = 0, currentTime = 0, estimatedTripKm = 0;
+  // Tính tâm (centroid) của 1 nhóm stores
+  _centroid(stores) {
+    const lat = stores.reduce((s, st) => s + st.lat, 0) / stores.length;
+    const lng = stores.reduce((s, st) => s + st.lng, 0) / stores.length;
+    return { lat, lng };
+  },
 
-    sorted.forEach(store => {
-      let travelDist;
-      if (currentTrip.length === 0) {
-        travelDist = this.roadDistance(warehouse.lat, warehouse.lng, store.lat, store.lng);
-      } else {
-        const last = currentTrip[currentTrip.length - 1];
-        travelDist = this.roadDistance(last.lat, last.lng, store.lat, store.lng);
+  // Gom stores theo huyện
+  _groupByDistrict(stores) {
+    const groups = {};
+    stores.forEach(s => {
+      if (!groups[s.district]) groups[s.district] = [];
+      groups[s.district].push(s);
+    });
+    return groups;
+  },
+
+  // Gộp huyện nhỏ (< minSize) vào huyện gần nhất
+  _mergeSmallDistricts(districtGroups, minSize) {
+    const keys = Object.keys(districtGroups);
+    const centroids = {};
+    keys.forEach(k => { centroids[k] = this._centroid(districtGroups[k]); });
+
+    let merged = true;
+    while (merged) {
+      merged = false;
+      const currentKeys = Object.keys(districtGroups);
+      for (const key of currentKeys) {
+        if (!districtGroups[key] || districtGroups[key].length >= minSize) continue;
+        // Tìm huyện gần nhất để gộp
+        let bestKey = null, bestDist = Infinity;
+        for (const other of currentKeys) {
+          if (other === key || !districtGroups[other]) continue;
+          const c1 = centroids[key], c2 = centroids[other];
+          const d = this.haversineDistance(c1.lat, c1.lng, c2.lat, c2.lng);
+          if (d < bestDist) { bestDist = d; bestKey = other; }
+        }
+        if (bestKey) {
+          districtGroups[bestKey] = districtGroups[bestKey].concat(districtGroups[key]);
+          centroids[bestKey] = this._centroid(districtGroups[bestKey]);
+          delete districtGroups[key];
+          delete centroids[key];
+          merged = true;
+          break; // restart loop
+        }
       }
-      const speed = this.estimateSpeed(
-        currentTrip.length === 0 ? warehouse.name : currentTrip[currentTrip.length - 1].district,
-        store.district
-      );
-      const travelTime = this.travelTimeMinutes(travelDist, speed);
-      const returnDist = this.roadDistance(store.lat, store.lng, warehouse.lat, warehouse.lng);
-      const returnTime = this.travelTimeMinutes(returnDist, CONFIG.speed.rural);
-      const totalTimeIfAdd = currentTime + travelTime + CONFIG.delivery.avgTimePerStop + returnTime;
-      const totalWeightIfAdd = currentWeight + store.demand;
-      const totalKmIfAdd = estimatedTripKm + travelDist + returnDist;
+    }
+    return districtGroups;
+  },
 
-      if (totalTimeIfAdd > CONFIG.workday.winmartMinutes ||
-          totalWeightIfAdd > CONFIG.vehicle.maxWinmartWeight ||
-          totalKmIfAdd > MAX_KM) {
-        if (currentTrip.length > 0) trips.push([...currentTrip]);
-        currentTrip = [store];
-        currentWeight = store.demand;
-        const newDist = this.roadDistance(warehouse.lat, warehouse.lng, store.lat, store.lng);
-        currentTime = this.travelTimeMinutes(newDist, CONFIG.speed.suburban) + CONFIG.delivery.avgTimePerStop;
-        estimatedTripKm = newDist;
+  // Kiểm tra 1 nhóm có vượt giới hạn xe không
+  _exceedsLimits(stores, warehouse) {
+    const MAX_KM = 110;
+    const totalWeight = stores.reduce((s, st) => s + st.demand, 0);
+    if (totalWeight > CONFIG.vehicle.maxWinmartWeight) return true;
+
+    // Ước tính km: kho → tâm → vòng quanh → kho
+    const centroid = this._centroid(stores);
+    const toCenter = this.roadDistance(warehouse.lat, warehouse.lng, centroid.lat, centroid.lng);
+    // Ước tính quãng đường nội vùng: ~2km mỗi điểm
+    const internalKm = stores.length * 2;
+    if ((toCenter * 2 + internalKm) > MAX_KM) return true;
+
+    // Ước tính thời gian
+    const avgSpeed = CONFIG.speed.suburban;
+    const travelTime = ((toCenter * 2 + internalKm) / avgSpeed) * 60;
+    const stopTime = stores.length * CONFIG.delivery.avgTimePerStop;
+    if ((travelTime + stopTime) > CONFIG.workday.winmartMinutes) return true;
+
+    return false;
+  },
+
+  // Chia 1 cụm lớn thành sub-zones theo góc từ tâm
+  _splitCluster(stores, warehouse, maxPerSplit) {
+    const centroid = this._centroid(stores);
+    const withAngle = stores.map(s => ({
+      ...s,
+      _angle: Math.atan2(s.lng - centroid.lng, s.lat - centroid.lat)
+    }));
+    withAngle.sort((a, b) => a._angle - b._angle);
+
+    const numSplits = Math.ceil(stores.length / maxPerSplit);
+    const perSplit = Math.ceil(stores.length / numSplits);
+    const splits = [];
+    for (let i = 0; i < numSplits; i++) {
+      const chunk = withAngle.slice(i * perSplit, Math.min((i + 1) * perSplit, stores.length));
+      if (chunk.length > 0) splits.push(chunk);
+    }
+    return splits;
+  },
+
+  // ===== ENTRY POINT: Chia chuyến theo huyện =====
+  buildTrips(stores, warehouse) {
+    const MIN_MERGE = 3;     // Huyện < 3 stores → gộp
+    const MAX_PER_VEHICLE = 12; // Tối đa ~12 điểm/xe
+
+    // Bước 1: Gom theo huyện
+    let districtGroups = this._groupByDistrict(stores);
+
+    // Bước 2: Gộp huyện nhỏ
+    districtGroups = this._mergeSmallDistricts(districtGroups, MIN_MERGE);
+
+    // Bước 3: Chia cụm lớn + kiểm tra giới hạn
+    const trips = [];
+    Object.values(districtGroups).forEach(group => {
+      if (group.length <= MAX_PER_VEHICLE && !this._exceedsLimits(group, warehouse)) {
+        trips.push(group);
       } else {
-        currentTrip.push(store);
-        currentWeight = totalWeightIfAdd;
-        currentTime += travelTime + CONFIG.delivery.avgTimePerStop;
-        estimatedTripKm += travelDist;
+        // Chia nhỏ hơn
+        const maxPer = Math.min(MAX_PER_VEHICLE, Math.ceil(group.length / 2));
+        const splits = this._splitCluster(group, warehouse, maxPer);
+        splits.forEach(s => trips.push(s));
       }
     });
-    if (currentTrip.length > 0) trips.push(currentTrip);
+
+    // Sắp xếp trips theo khoảng cách tâm cụm đến kho (gần trước)
+    trips.sort((a, b) => {
+      const ca = this._centroid(a), cb = this._centroid(b);
+      return this.haversineDistance(ca.lat, ca.lng, warehouse.lat, warehouse.lng)
+           - this.haversineDistance(cb.lat, cb.lng, warehouse.lat, warehouse.lng);
+    });
+
     return trips;
   },
 
-  // Chia cố định N xe (phân cụm theo góc địa lý)
+  // Chia cố định N xe — ưu tiên giữ nguyên huyện trong 1 xe
   buildFixedTrips(stores, warehouse, numVehicles) {
-    const withAngle = stores.map(s => ({
-      ...s,
-      angle: Math.atan2(s.lng - warehouse.lng, s.lat - warehouse.lat)
-    }));
-    withAngle.sort((a, b) => a.angle - b.angle);
-    const trips = [];
-    const perVehicle = Math.ceil(withAngle.length / numVehicles);
-    for (let i = 0; i < numVehicles; i++) {
-      const chunk = withAngle.slice(i * perVehicle, Math.min((i + 1) * perVehicle, withAngle.length));
-      if (chunk.length > 0) trips.push(chunk);
-    }
-    return trips;
+    const MIN_MERGE = 2;
+
+    // Bước 1: Gom theo huyện
+    let districtGroups = this._groupByDistrict(stores);
+
+    // Bước 2: Gộp huyện rất nhỏ
+    districtGroups = this._mergeSmallDistricts(districtGroups, MIN_MERGE);
+
+    // Bước 3: Sắp xếp cụm theo góc từ kho (để các xe liền kề nhau trên bản đồ)
+    const clusters = Object.values(districtGroups).map(group => {
+      const c = this._centroid(group);
+      return {
+        stores: group,
+        centroid: c,
+        angle: Math.atan2(c.lng - warehouse.lng, c.lat - warehouse.lat),
+        size: group.length
+      };
+    });
+    clusters.sort((a, b) => a.angle - b.angle);
+
+    // Bước 4: Phân bổ cụm vào N xe
+    // Ưu tiên: giữ cả huyện trong 1 xe, phân đều số điểm
+    const trips = Array.from({ length: numVehicles }, () => []);
+    const targetPerVehicle = Math.ceil(stores.length / numVehicles);
+
+    // Greedy: gán từng cụm vào xe có ít điểm nhất + gần nhất
+    clusters.forEach(cluster => {
+      if (cluster.stores.length > targetPerVehicle * 1.5) {
+        // Cụm quá lớn → chia ra
+        const splits = this._splitCluster(cluster.stores, warehouse,
+          Math.ceil(cluster.stores.length / Math.ceil(cluster.stores.length / targetPerVehicle)));
+        splits.forEach(split => {
+          // Tìm xe trống nhất
+          const minIdx = trips.reduce((mi, t, i) =>
+            t.length < trips[mi].length ? i : mi, 0);
+          trips[minIdx] = trips[minIdx].concat(split);
+        });
+      } else {
+        // Tìm xe trống nhất
+        const minIdx = trips.reduce((mi, t, i) =>
+          t.length < trips[mi].length ? i : mi, 0);
+        trips[minIdx] = trips[minIdx].concat(cluster.stores);
+      }
+    });
+
+    return trips.filter(t => t.length > 0);
   },
 
   nearestNeighborRoute(stores, warehouse) {
