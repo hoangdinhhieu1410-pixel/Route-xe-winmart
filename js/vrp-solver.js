@@ -181,6 +181,23 @@ const VRPSolver = {
     // Bước 1: Gom theo huyện
     let districtGroups = this._groupByDistrict(stores);
 
+    // Bước 1.5: Chia huyện rộng (spread > 15km) thành sub-zones
+    const refined = {};
+    Object.entries(districtGroups).forEach(([name, group]) => {
+      const lats = group.map(s => s.lat), lngs = group.map(s => s.lng);
+      const spreadKm = Math.max(
+        (Math.max(...lats) - Math.min(...lats)) * 111,
+        (Math.max(...lngs) - Math.min(...lngs)) * 104
+      );
+      if (spreadKm > 15 && group.length > 4) {
+        const splits = this._splitCluster(group, warehouse, Math.ceil(group.length / 2));
+        splits.forEach((s, i) => { refined[`${name}_${i+1}`] = s; });
+      } else {
+        refined[name] = group;
+      }
+    });
+    districtGroups = refined;
+
     // Bước 2: Gộp huyện nhỏ
     districtGroups = this._mergeSmallDistricts(districtGroups, MIN_MERGE);
 
@@ -207,17 +224,49 @@ const VRPSolver = {
     return trips;
   },
 
-  // Chia cố định N xe — ưu tiên giữ nguyên huyện trong 1 xe
+  // Ước tính tổng km của 1 trip (kho → route → kho)
+  _estimateTripKm(stores, warehouse) {
+    if (stores.length === 0) return 0;
+    // Sắp xếp tạm theo nearest neighbor để ước tính
+    const route = this.nearestNeighborRoute([...stores], warehouse);
+    let km = this.roadDistance(warehouse.lat, warehouse.lng, route[0].lat, route[0].lng);
+    for (let i = 0; i < route.length - 1; i++) {
+      km += this.roadDistance(route[i].lat, route[i].lng, route[i+1].lat, route[i+1].lng);
+    }
+    km += this.roadDistance(route[route.length-1].lat, route[route.length-1].lng, warehouse.lat, warehouse.lng);
+    return km;
+  },
+
+  // Chia cố định N xe — ưu tiên giữ nguyên huyện, kiểm tra km
   buildFixedTrips(stores, warehouse, numVehicles) {
     const MIN_MERGE = 2;
+    const MAX_KM = 90; // Giới hạn km mỗi xe
 
     // Bước 1: Gom theo huyện
     let districtGroups = this._groupByDistrict(stores);
 
-    // Bước 2: Gộp huyện rất nhỏ
+    // Bước 2: Chia huyện rộng (spread > 15km) thành sub-zones TRƯỚC khi gộp
+    const refined = {};
+    Object.entries(districtGroups).forEach(([name, group]) => {
+      const lats = group.map(s => s.lat), lngs = group.map(s => s.lng);
+      const spreadKm = Math.max(
+        (Math.max(...lats) - Math.min(...lats)) * 111,
+        (Math.max(...lngs) - Math.min(...lngs)) * 104
+      );
+      if (spreadKm > 15 && group.length > 4) {
+        // Chia sub-zones
+        const splits = this._splitCluster(group, warehouse, Math.ceil(group.length / 2));
+        splits.forEach((s, i) => { refined[`${name}_${i+1}`] = s; });
+      } else {
+        refined[name] = group;
+      }
+    });
+    districtGroups = refined;
+
+    // Bước 3: Gộp huyện rất nhỏ
     districtGroups = this._mergeSmallDistricts(districtGroups, MIN_MERGE);
 
-    // Bước 3: Sắp xếp cụm theo góc từ kho (để các xe liền kề nhau trên bản đồ)
+    // Bước 4: Sắp xếp cụm theo góc từ kho
     const clusters = Object.values(districtGroups).map(group => {
       const c = this._centroid(group);
       return {
@@ -229,30 +278,64 @@ const VRPSolver = {
     });
     clusters.sort((a, b) => a.angle - b.angle);
 
-    // Bước 4: Phân bổ cụm vào N xe
-    // Ưu tiên: giữ cả huyện trong 1 xe, phân đều số điểm
+    // Bước 5: Phân bổ cụm vào N xe
     const trips = Array.from({ length: numVehicles }, () => []);
     const targetPerVehicle = Math.ceil(stores.length / numVehicles);
 
-    // Greedy: gán từng cụm vào xe có ít điểm nhất + gần nhất
     clusters.forEach(cluster => {
       if (cluster.stores.length > targetPerVehicle * 1.5) {
-        // Cụm quá lớn → chia ra
         const splits = this._splitCluster(cluster.stores, warehouse,
           Math.ceil(cluster.stores.length / Math.ceil(cluster.stores.length / targetPerVehicle)));
         splits.forEach(split => {
-          // Tìm xe trống nhất
           const minIdx = trips.reduce((mi, t, i) =>
             t.length < trips[mi].length ? i : mi, 0);
           trips[minIdx] = trips[minIdx].concat(split);
         });
       } else {
-        // Tìm xe trống nhất
         const minIdx = trips.reduce((mi, t, i) =>
           t.length < trips[mi].length ? i : mi, 0);
         trips[minIdx] = trips[minIdx].concat(cluster.stores);
       }
     });
+
+    // Bước 6: Kiểm tra km — nếu xe nào vượt MAX_KM, chuyển điểm xa nhất sang xe khác
+    for (let iter = 0; iter < 5; iter++) {
+      let improved = false;
+      for (let i = 0; i < trips.length; i++) {
+        if (trips[i].length === 0) continue;
+        const km = this._estimateTripKm(trips[i], warehouse);
+        if (km > MAX_KM && trips[i].length > 2) {
+          // Tìm điểm xa nhất từ tâm cụm
+          const centroid = this._centroid(trips[i]);
+          let farthestIdx = 0, farthestDist = 0;
+          trips[i].forEach((s, idx) => {
+            const d = this.haversineDistance(s.lat, s.lng, centroid.lat, centroid.lng);
+            if (d > farthestDist) { farthestDist = d; farthestIdx = idx; }
+          });
+          const removed = trips[i].splice(farthestIdx, 1)[0];
+
+          // Tìm xe gần nhất có chỗ trống + km thấp
+          let bestVehicle = -1, bestScore = Infinity;
+          for (let j = 0; j < trips.length; j++) {
+            if (j === i) continue;
+            const jKm = this._estimateTripKm(trips[j], warehouse);
+            const jCentroid = trips[j].length > 0 ? this._centroid(trips[j]) : warehouse;
+            const distToStore = this.haversineDistance(removed.lat, removed.lng, jCentroid.lat, jCentroid.lng);
+            const score = jKm + distToStore * 2;
+            if (score < bestScore && jKm < MAX_KM * 0.85) {
+              bestScore = score; bestVehicle = j;
+            }
+          }
+          if (bestVehicle >= 0) {
+            trips[bestVehicle].push(removed);
+            improved = true;
+          } else {
+            trips[i].push(removed); // Không chuyển được → giữ lại
+          }
+        }
+      }
+      if (!improved) break;
+    }
 
     return trips.filter(t => t.length > 0);
   },
