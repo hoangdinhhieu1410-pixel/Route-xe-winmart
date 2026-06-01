@@ -298,46 +298,28 @@ const VRPSolver = {
       }
     });
 
-    // Bước 6: Kiểm tra km — nếu xe nào vượt MAX_KM, chuyển điểm xa nhất sang xe khác
-    for (let iter = 0; iter < 5; iter++) {
-      let improved = false;
-      for (let i = 0; i < trips.length; i++) {
-        if (trips[i].length === 0) continue;
-        const km = this._estimateTripKm(trips[i], warehouse);
-        if (km > MAX_KM && trips[i].length > 2) {
-          // Tìm điểm xa nhất từ tâm cụm
-          const centroid = this._centroid(trips[i]);
-          let farthestIdx = 0, farthestDist = 0;
-          trips[i].forEach((s, idx) => {
-            const d = this.haversineDistance(s.lat, s.lng, centroid.lat, centroid.lng);
-            if (d > farthestDist) { farthestDist = d; farthestIdx = idx; }
-          });
-          const removed = trips[i].splice(farthestIdx, 1)[0];
-
-          // Tìm xe gần nhất có chỗ trống + km thấp
-          let bestVehicle = -1, bestScore = Infinity;
-          for (let j = 0; j < trips.length; j++) {
-            if (j === i) continue;
-            const jKm = this._estimateTripKm(trips[j], warehouse);
-            const jCentroid = trips[j].length > 0 ? this._centroid(trips[j]) : warehouse;
-            const distToStore = this.haversineDistance(removed.lat, removed.lng, jCentroid.lat, jCentroid.lng);
-            const score = jKm + distToStore * 2;
-            if (score < bestScore && jKm < MAX_KM * 0.85) {
-              bestScore = score; bestVehicle = j;
-            }
-          }
-          if (bestVehicle >= 0) {
-            trips[bestVehicle].push(removed);
-            improved = true;
-          } else {
-            trips[i].push(removed); // Không chuyển được → giữ lại
-          }
+    // Bước 6: FORCE-SPLIT — bất kỳ trip nào > MAX_KM sẽ bị chia đôi
+    let finalTrips = trips.filter(t => t.length > 0);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const newTrips = [];
+      for (const trip of finalTrips) {
+        if (trip.length <= 2) { newTrips.push(trip); continue; }
+        const km = this._estimateTripKm(trip, warehouse);
+        if (km > MAX_KM) {
+          // Chia đôi theo góc từ tâm cụm
+          const splits = this._splitCluster(trip, warehouse, Math.ceil(trip.length / 2));
+          splits.forEach(s => newTrips.push(s));
+          changed = true;
+        } else {
+          newTrips.push(trip);
         }
       }
-      if (!improved) break;
+      finalTrips = newTrips;
     }
 
-    return trips.filter(t => t.length > 0);
+    return finalTrips;
   },
 
   nearestNeighborRoute(stores, warehouse) {
