@@ -275,46 +275,81 @@ const VRPSolver = {
       trips[vehicleIdx] = trips[vehicleIdx].concat(district.stores);
     });
 
-    // ====== CÂN BẰNG: swap stores giữa xe liền kề để giảm max km ======
+    // ====== CÂN BẰNG MIN STORES: mỗi xe tối thiểu 3 điểm ======
+    const MIN_STORES = 3;
+    for (let iter = 0; iter < 10; iter++) {
+      let improved = false;
+      for (let i = 0; i < trips.length; i++) {
+        if (trips[i].length === 0 || trips[i].length >= MIN_STORES) continue;
+
+        // Xe i có < 3 stores → chuyển hết sang xe gần nhất
+        const centroid = this._centroid(trips[i]);
+        let bestTarget = -1, bestDist = Infinity;
+        for (let j = 0; j < trips.length; j++) {
+          if (j === i || trips[j].length === 0) continue;
+          const jc = this._centroid(trips[j]);
+          const d = this.haversineDistance(centroid.lat, centroid.lng, jc.lat, jc.lng);
+          if (d < bestDist) { bestDist = d; bestTarget = j; }
+        }
+        if (bestTarget >= 0) {
+          trips[bestTarget] = trips[bestTarget].concat(trips[i]);
+          trips[i] = [];
+          improved = true;
+        }
+      }
+      if (!improved) break;
+    }
+
+    // Phân phối lại: xe quá nhiều → chia bớt cho xe trống
+    let activeTrips = trips.filter(t => t.length > 0);
+    while (activeTrips.length < numVehicles) {
+      // Tìm xe nhiều nhất → chia đôi
+      activeTrips.sort((a, b) => b.length - a.length);
+      const biggest = activeTrips[0];
+      if (biggest.length < MIN_STORES * 2) break; // Không đủ chia
+
+      const splits = this._splitCluster(biggest, warehouse, Math.ceil(biggest.length / 2));
+      activeTrips[0] = splits[0];
+      activeTrips.push(splits[1]);
+    }
+
+    // ====== CÂN BẰNG KM: swap stores giữa xe để giảm max km ======
     for (let iter = 0; iter < 10; iter++) {
       let improved = false;
 
-      for (let i = 0; i < trips.length; i++) {
-        if (trips[i].length <= 1) continue;
-        const kmI = this._estimateTripKm(trips[i], warehouse);
+      for (let i = 0; i < activeTrips.length; i++) {
+        if (activeTrips[i].length <= MIN_STORES) continue;
+        const kmI = this._estimateTripKm(activeTrips[i], warehouse);
 
-        // Thử chuyển store xa nhất sang xe liền kề có km thấp hơn
         if (kmI > 85) {
-          // Tìm store xa nhất từ tâm xe i
-          const centroid = this._centroid(trips[i]);
+          const centroid = this._centroid(activeTrips[i]);
           let worstIdx = 0, worstDist = 0;
-          trips[i].forEach((s, idx) => {
+          activeTrips[i].forEach((s, idx) => {
             const d = this.haversineDistance(s.lat, s.lng, centroid.lat, centroid.lng);
             if (d > worstDist) { worstDist = d; worstIdx = idx; }
           });
 
-          // Thử chuyển sang xe có km thấp nhất VÀ gần nhất
           let bestTarget = -1, bestScore = Infinity;
-          for (let j = 0; j < trips.length; j++) {
+          for (let j = 0; j < activeTrips.length; j++) {
             if (j === i) continue;
-            const kmJ = this._estimateTripKm(trips[j], warehouse);
-            if (kmJ >= kmI) continue; // Chỉ chuyển sang xe có km thấp hơn
+            const kmJ = this._estimateTripKm(activeTrips[j], warehouse);
+            if (kmJ >= kmI) continue;
 
-            const jCentroid = trips[j].length > 0 ? this._centroid(trips[j]) : warehouse;
+            const jCentroid = this._centroid(activeTrips[j]);
             const distToStore = this.haversineDistance(
-              trips[i][worstIdx].lat, trips[i][worstIdx].lng,
+              activeTrips[i][worstIdx].lat, activeTrips[i][worstIdx].lng,
               jCentroid.lat, jCentroid.lng
             );
-            const newKmJ = kmJ + distToStore * 2.5; // Ước tính km mới
+            const newKmJ = kmJ + distToStore * 2.5;
             if (newKmJ < 95 && newKmJ < bestScore) {
               bestScore = newKmJ;
               bestTarget = j;
             }
           }
 
-          if (bestTarget >= 0) {
-            const moved = trips[i].splice(worstIdx, 1)[0];
-            trips[bestTarget].push(moved);
+          if (bestTarget >= 0 && activeTrips[i].length > MIN_STORES) {
+            const moved = activeTrips[i].splice(worstIdx, 1)[0];
+            activeTrips[bestTarget].push(moved);
             improved = true;
           }
         }
@@ -322,7 +357,7 @@ const VRPSolver = {
       if (!improved) break;
     }
 
-    return trips.filter(t => t.length > 0);
+    return activeTrips.filter(t => t.length >= MIN_STORES);
   },
 
   nearestNeighborRoute(stores, warehouse) {
