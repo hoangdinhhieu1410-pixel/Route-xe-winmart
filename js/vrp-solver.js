@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // 🧮 VRP SOLVER v4 - Multi-Province
 // Nam Định + Hà Nam
 // ============================================
@@ -471,9 +471,6 @@ const VRPSolver = {
     const stores = pConfig.getStores();
     const urbanDistricts = pConfig.urbanDistricts;
 
-    console.time(`⏱️ VRP Solver - ${pConfig.name}`);
-    console.log(`🚛 Tối ưu lộ trình: ${pConfig.name} (${stores.length} cửa hàng)...`);
-
     const assignments = this.assignStoresToWarehouses(stores, pConfig);
 
     const vehicles = [];
@@ -487,10 +484,10 @@ const VRPSolver = {
       const fixedCount = pConfig.fixedVehicles?.[warehouse.id];
       if (fixedCount) {
         trips = this.buildFixedTrips(warehouseStores, warehouse, fixedCount);
-        console.log(`🏭 ${warehouse.name}: ${fixedCount} xe (cố định), ${warehouseStores.length} cửa hàng`);
+
       } else {
         trips = this.buildTrips(warehouseStores, warehouse);
-        console.log(`🏭 ${warehouse.name}: ${trips.length} chuyến, ${warehouseStores.length} cửa hàng`);
+
       }
 
       trips.forEach(trip => {
@@ -523,8 +520,7 @@ const VRPSolver = {
       };
     });
 
-    console.log(`✅ ${pConfig.name}: ${summary.totalVehicles} xe, ${summary.totalDistance} km`);
-    console.timeEnd(`⏱️ VRP Solver - ${pConfig.name}`);
     return { vehicles, summary, provinceKey: pKey, provinceConfig: pConfig };
   }
 };
+
